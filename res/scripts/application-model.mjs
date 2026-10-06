@@ -297,6 +297,8 @@ export const application = Object.freeze({
   }),
   /** Current instance. */
   instance: Object.seal({
+    /** Cover image as a data URL, or null for the default cover. */
+    cover: null,
     file: null,
     modified: false,
   }),

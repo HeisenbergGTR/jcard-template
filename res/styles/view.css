@@ -301,3 +301,21 @@ article.reverse
     border-block-end-style: unset;
   }
 }
+
+body.dropping::after {
+  align-items: center;
+  background-color: rgb(0 0 0 / 0.6);
+  color: #fff;
+  content: "Drop an image to set the cover, or a .jcard.json file to open it";
+  display: flex;
+  font-size: 1.5em;
+  inset: 0;
+  justify-content: center;
+  outline: 0.25em dashed #fff;
+  outline-offset: -1em;
+  padding: 2em;
+  pointer-events: none;
+  position: fixed;
+  text-align: center;
+  z-index: 1000;
+}

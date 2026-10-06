@@ -6,10 +6,13 @@
 
 import { FILE_NAME, MESSAGES } from "./constants.mjs";
 import {
+  isImageFile,
   loadFile,
   loadReader,
+  readCover,
   resetCover,
   saveCover,
+  setCover,
   saveDataSaves,
   testAndPrint,
   doPrint,
@@ -43,7 +46,6 @@ import {
   addBooleanListener,
   addClassListener,
   addHtmlListener,
-  addSrcListener,
   addStyleVariableListener,
   makeHandler,
   doAfterEdit,
@@ -179,8 +181,14 @@ function setupEntryEvents() {
   addHtmlListener(i.titleLower, o.spineTitleLower, OPTIONS_COALESCE);
   addHtmlListener(i.titleUpper, o.frontTitleUpper, OPTIONS_COALESCE);
   addHtmlListener(i.titleUpper, o.spineTitleUpper, OPTIONS_COALESCE);
-  addSrcListener(i.coverImage, o.cover);
-  addSrcListener(getLoadEntry("cover"), o.cover);
+  [i.coverImage, getLoadEntry("cover")].forEach((entry) => {
+    entry.element.addEventListener("change", () => {
+      const files = entry.element.files;
+      if (files && files.length) {
+        applyCoverFile(files[0]);
+      }
+    });
+  });
   addStyleVariableListener(i, "backContentsAlignment", OPTIONS_COALESCE);
   addStyleVariableListener(i, "backSize", OPTIONS_COALESCE_PT);
   addStyleVariableListener(i, "cardColor", OPTIONS_COALESCE);
@@ -212,15 +220,93 @@ function setupFileEvents() {
     ECC.flush();
     removeAnesthesia();
   });
-  getRoot().element.addEventListener("dragover", (event) => {
+  let dragTimeout;
+  document.addEventListener("dragover", (event) => {
+    if (!hasDropPayload(event.dataTransfer)) {
+      return;
+    }
     event.preventDefault();
+    document.body.classList.add("dropping");
+    clearTimeout(dragTimeout);
+    dragTimeout = setTimeout(
+      () => document.body.classList.remove("dropping"),
+      200
+    );
   });
-  getRoot().element.addEventListener("drop", (event) => {
+  document.addEventListener("drop", (event) => {
+    if (!hasDropPayload(event.dataTransfer)) {
+      return;
+    }
     event.preventDefault();
-    if (event.dataTransfer.files.length) {
-      loadFile(event.dataTransfer.files);
+    clearTimeout(dragTimeout);
+    document.body.classList.remove("dropping");
+    const transfer = event.dataTransfer;
+    const files = Array.from(transfer.files);
+    const data = files.find((file) => !isImageFile(file));
+    const image = files.find(isImageFile);
+    if (data) {
+      loadFile([data]);
+    } else if (image) {
+      applyCoverFile(image);
+    } else {
+      const url = transfer.getData("text/uri-list").split(/\r?\n/)[0];
+      if (url) {
+        applyCoverUrl(url);
+      }
     }
   });
+  document.addEventListener("paste", (event) => {
+    const transfer = event.clipboardData;
+    const image = Array.from(transfer.files).find(isImageFile);
+    // Let text pastes into fields through, even if an image came along.
+    if (
+      !image ||
+      (event.target instanceof Element &&
+        event.target.matches("input, textarea") &&
+        transfer.types.includes("text/plain"))
+    ) {
+      return;
+    }
+    event.preventDefault();
+    applyCoverFile(image);
+  });
+}
+
+/**
+ * Returns whether the given drag carries files or links, as opposed to text
+ * being dragged into a field.
+ */
+function hasDropPayload(transfer) {
+  return (
+    transfer.types.includes("Files") || transfer.types.includes("text/uri-list")
+  );
+}
+
+/** Sets the cover image to the given image file and marks the card modified. */
+function applyCoverFile(file) {
+  return readCover(file).then(
+    (src) => {
+      setCover(src);
+      doAfterModify({ save: true });
+    },
+    () => {}
+  );
+}
+
+/**
+ * Sets the cover image to the image at the given URL, such as one dragged from
+ * another page. Fails on sites that do not allow cross-origin reads.
+ */
+function applyCoverUrl(url) {
+  return fetch(url)
+    .then((response) => response.blob())
+    .then((blob) => {
+      if (!isImageFile(blob)) {
+        throw new TypeError();
+      }
+      return applyCoverFile(blob);
+    })
+    .catch(() => alert(MESSAGES.coverFetch));
 }
 
 /** Adds listeners to entries that update entries. */

@@ -92,6 +92,9 @@ export function loadReader() {
     return;
   }
   populateDataSaves(data);
+  if (typeof data.cover === "string" && regexps.coverData.test(data.cover)) {
+    setCover(data.cover);
+  }
   if (data.print2) {
     getPrintEntry("count").value = 2;
   }
@@ -114,8 +117,11 @@ export function populateDataSaves(values = NUL_OBJECT) {
 
 /** Returns a snapshot of data form entry values that are to be saved. */
 export function preserveDataSaves() {
-  const out = { version: DATA_VERSION };
-  return preserve(getDataSaveEntries, out);
+  const out = preserve(getDataSaveEntries, { version: DATA_VERSION });
+  if (application.instance.cover) {
+    out.cover = application.instance.cover;
+  }
+  return out;
 }
 
 /** Saves data form entries that are to be saved as a file download. */
@@ -128,16 +134,51 @@ export function updateData() {
   return update([getDataEntries]);
 }
 
+/** Returns whether the given file is an image. */
+export function isImageFile(file) {
+  return Boolean(file) && regexps.imageType.test(file.type);
+}
+
+/**
+ * Reads the given image file as-is, without resizing or recompressing, and
+ * resolves with its data URL.
+ */
+export function readCover(file) {
+  return new Promise((resolve, reject) => {
+    if (!isImageFile(file)) {
+      alert(MESSAGES.coverBadType + ((file && file.type) || "(empty)"));
+      return reject(new TypeError(MESSAGES.coverBadType));
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsDataURL(file);
+  });
+}
+
 /** Resets the cover image. */
 export function resetCover() {
   const entry = getDataEntry("coverImage");
   entry.value = NUL_STRING;
+  application.instance.cover = null;
   getOutput("cover").element.src = COVER_IMAGE;
   setModifiedBy(entry);
 }
 
+/** Sets the cover image to the given data URL. */
+export function setCover(src = NUL_STRING) {
+  application.instance.cover = src;
+  getOutput("cover").element.src = src;
+}
+
 /** Saves the cover image as a file download. */
 export function saveCover() {
+  const cover = application.instance.cover;
+  const match = cover && cover.match(regexps.coverData);
+  if (match) {
+    const extension = match[1].replace("jpeg", "jpg").replace("+xml", "");
+    return download(getCardName() + "." + extension, cover);
+  }
   return download(getCardName(), getOutput("cover").element.src);
 }
 

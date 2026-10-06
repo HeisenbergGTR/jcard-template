@@ -7,7 +7,11 @@
 /** Messages. */
 export const MESSAGES = Object.freeze({
   loadDiscard: "This discards any unsaved changes made to the current J-card.",
-  loadLarge: "Its size is greater than 1 MiB, proceed with loading?",
+  coverBadType: "That is not an image file: ",
+  coverFetch:
+    "Could not grab that image from the other page. Try right-clicking it, " +
+    "choosing Copy image, then pressing Ctrl+V here.",
+  loadLarge: "Its size is greater than 256 MiB, proceed with loading?",
 });
 /** CSS custom property prefix. */
 export const CSS_PREFIX = "jCard";
@@ -21,8 +25,8 @@ export const FILE_EXTENSION = ".jcard.json";
 export const FILE_NAME_LENGTH_MAX = 255 - FILE_EXTENSION.length;
 /** Default file name. */
 export const FILE_NAME = "Unnamed";
-/** Maximum safe file size in bytes. */
-export const FILE_SIZE_MAX_SAFE = 1048576;
+/** Maximum safe file size in bytes. Data files may embed the cover image. */
+export const FILE_SIZE_MAX_SAFE = 268435456;
 
 /** Default cover image source. */
 export const COVER_IMAGE = "res/media/cover.png";
@@ -31,6 +35,10 @@ export const COVER_IMAGE = "res/media/cover.png";
 export const regexps = Object.freeze({
   /** Source file name extension. */
   fileExtension: new RegExp(/(\.jcard)?\.json$/),
+  /** Embedded cover image data URL. */
+  coverData: new RegExp(/^data:image\/([\w.+-]+)[;,]/),
+  /** Image MIME type. */
+  imageType: new RegExp(/^image\//),
   /** Source file MIME type. */
   fileType: new RegExp(/^(application\/json|text\/)/),
 });
