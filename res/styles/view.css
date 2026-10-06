@@ -319,3 +319,22 @@ body.dropping::after {
   text-align: center;
   z-index: 1000;
 }
+
+.field .input.slider {
+  align-items: center;
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.5em;
+}
+
+.field .input.slider > input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+.field .input.slider > input[type="number"] {
+  flex: 0 0 5.5em;
+  min-width: 0;
+  width: 5.5em;
+}

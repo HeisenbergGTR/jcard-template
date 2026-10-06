@@ -29,8 +29,16 @@ import {
   getViewEntry,
 } from "./application-functions.mjs";
 import { setBackContents, setFrontContents } from "./edits.mjs";
-import { NUL_OBJECT } from "./common/constants.mjs";
-import { getInputSafeValue, setWindowSubtitle } from "./common/functions.mjs";
+import {
+  NUL_OBJECT,
+  EVENT_CHANGE,
+  EVENT_INPUT,
+} from "./common/constants.mjs";
+import {
+  getInputSafeValue,
+  qsAll,
+  setWindowSubtitle,
+} from "./common/functions.mjs";
 import {
   getButtons,
   isModified,
@@ -63,6 +71,7 @@ const OPTIONS_COALESCE_PT = Object.freeze({ coalesce: true, suffix: "pt" });
 export function setupEvents() {
   setupApplicationEvents();
   setupButtonEvents();
+  setupCoverEvents();
   setupEntryEvents();
   setupFileEvents();
   setupFormEvents();
@@ -100,7 +109,10 @@ function setupButtonEvents() {
   addActionListener(buttons.load, (event) =>
     loadFile(getInputSafeValue(event.target))
   );
+  addActionListener(buttons.coverAdjustReset, resetCoverAdjustments);
   addActionListener(buttons.coverReset, resetCover);
+  addActionListener(buttons.coverRotateLeft, () => rotateCover(-90));
+  addActionListener(buttons.coverRotateRight, () => rotateCover(90));
   addActionListener(buttons.print, testAndPrint);
   addActionListener(buttons.save, saveDataSaves);
   addActionListener(buttons.saveCover, saveCover);
@@ -135,7 +147,9 @@ function setupEntryEvents() {
     OPTIONS_COALESCE_INVERT
   );
   addClassListener(i.bold, o.root, "bold", OPTIONS_COALESCE);
-  addClassListener(i.fillCover, o.cover, "fill", OPTIONS_COALESCE);
+  addClassListener(i.coverFlipH, o.coverFrame, "flip-h", OPTIONS_COALESCE);
+  addClassListener(i.coverFlipV, o.coverFrame, "flip-v", OPTIONS_COALESCE);
+  addClassListener(i.fillCover, o.coverFrame, "fill", OPTIONS_COALESCE);
   addClassListener(i.forceCaps, o.root, "force-caps", OPTIONS_COALESCE);
   addClassListener(
     i.frontContentsVisible,
@@ -193,6 +207,10 @@ function setupEntryEvents() {
   addStyleVariableListener(i, "backSize", OPTIONS_COALESCE_PT);
   addStyleVariableListener(i, "cardColor", OPTIONS_COALESCE);
   addStyleVariableListener(i, "coverHeightFactor", OPTIONS_COALESCE);
+  addStyleVariableListener(i, "coverOffsetX", OPTIONS_COALESCE);
+  addStyleVariableListener(i, "coverOffsetY", OPTIONS_COALESCE);
+  addStyleVariableListener(i, "coverRotate", OPTIONS_COALESCE);
+  addStyleVariableListener(i, "coverZoom", OPTIONS_COALESCE);
   addStyleVariableListener(i, "fontFamily", OPTIONS_COALESCE);
   addStyleVariableListener(i, "footerAlignment", OPTIONS_COALESCE);
   addStyleVariableListener(i, "footerSize", OPTIONS_COALESCE_PT);
@@ -287,6 +305,7 @@ function applyCoverFile(file) {
   return readCover(file).then(
     (src) => {
       setCover(src);
+      resetCoverAdjustments();
       doAfterModify({ save: true });
     },
     () => {}
@@ -311,6 +330,17 @@ function applyCoverUrl(url) {
 
 /** Adds listeners to entries that update entries. */
 function setupFormEvents() {
+  // Keep each slider and its number box in step.
+  qsAll(getRoot().element, 'input[type="range"][data-for]').forEach((range) => {
+    const number = document.getElementById(range.dataset.for);
+    number.addEventListener("input", () => {
+      range.value = number.value || number.placeholder;
+    });
+    range.addEventListener("input", () => {
+      number.value = range.value;
+      number.dispatchEvent(EVENT_INPUT);
+    });
+  });
   addBooleanListener(
     getDataEntry("fillCover"),
     getDataEntry("coverHeightFactor").element,
@@ -350,6 +380,150 @@ function setupWindowEvents() {
     );
   });
   window.addEventListener("afterprint", undoPrint);
+}
+
+/** Adds pointer, wheel and keyboard controls to the cover on the card. */
+function setupCoverEvents() {
+  const frame = getOutputs().coverFrame.element;
+  let drag = null;
+  frame.tabIndex = 0;
+  frame.addEventListener("pointerdown", (event) => {
+    if (event.button) {
+      return;
+    }
+    event.preventDefault();
+    frame.focus();
+    frame.setPointerCapture(event.pointerId);
+    frame.classList.add("dragging");
+    drag = {
+      x: event.clientX,
+      y: event.clientY,
+      offsetX: Number(getDataEntry("coverOffsetX").valueOrLkgOrPreset),
+      offsetY: Number(getDataEntry("coverOffsetY").valueOrLkgOrPreset),
+    };
+  });
+  frame.addEventListener("pointermove", (event) => {
+    if (!drag) {
+      return;
+    }
+    const rect = frame.getBoundingClientRect();
+    setCoverNumber(
+      "coverOffsetX",
+      drag.offsetX + ((event.clientX - drag.x) / rect.width) * 100
+    );
+    setCoverNumber(
+      "coverOffsetY",
+      drag.offsetY + ((event.clientY - drag.y) / rect.height) * 100
+    );
+  });
+  ["pointerup", "pointercancel"].forEach((type) => {
+    frame.addEventListener(type, () => {
+      drag = null;
+      frame.classList.remove("dragging");
+    });
+  });
+  frame.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+      zoomCover(event.deltaY < 0 ? 1.05 : 1 / 1.05);
+    },
+    { passive: false }
+  );
+  frame.addEventListener("keydown", (event) => {
+    const big = event.shiftKey;
+    const nudge = big ? 5 : 0.5;
+    switch (event.key) {
+      case "ArrowLeft":
+        nudgeCover("coverOffsetX", -nudge);
+        break;
+      case "ArrowRight":
+        nudgeCover("coverOffsetX", nudge);
+        break;
+      case "ArrowUp":
+        nudgeCover("coverOffsetY", -nudge);
+        break;
+      case "ArrowDown":
+        nudgeCover("coverOffsetY", nudge);
+        break;
+      case "+":
+      case "=":
+        zoomCover(big ? 1.1 : 1.01);
+        break;
+      case "-":
+      case "_":
+        zoomCover(big ? 1 / 1.1 : 1 / 1.01);
+        break;
+      case "[":
+      case "{":
+        rotateCover(big ? -15 : -0.5);
+        break;
+      case "]":
+      case "}":
+        rotateCover(big ? 15 : 0.5);
+        break;
+      case "0":
+      case ")":
+        resetCoverAdjustments();
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+  });
+}
+
+/** Adds the given amount to the cover number entry by its key. */
+function nudgeCover(key, amount) {
+  return setCoverNumber(
+    key,
+    Number(getDataEntry(key).valueOrLkgOrPreset) + amount
+  );
+}
+
+/** Resets the cover zoom, position, rotation and flips. */
+function resetCoverAdjustments() {
+  ["coverOffsetX", "coverOffsetY", "coverRotate", "coverZoom"].forEach((key) =>
+    setCoverNumber(key, getDataEntry(key).preset)
+  );
+  ["coverFlipH", "coverFlipV"].forEach((key) => {
+    const entry = getDataEntry(key);
+    entry.value = entry.preset;
+    entry.element.dispatchEvent(EVENT_CHANGE);
+  });
+}
+
+/** Rotates the cover by the given degrees, wrapping within ±180. */
+function rotateCover(degrees) {
+  let angle = Number(getDataEntry("coverRotate").valueOrLkgOrPreset) + degrees;
+  angle = ((((angle + 180) % 360) + 360) % 360) - 180;
+  return setCoverNumber("coverRotate", angle === -180 ? 180 : angle);
+}
+
+/**
+ * Sets the cover number entry by its key to the given value, clamped to its
+ * limits and rounded to its step, then applies it.
+ */
+function setCoverNumber(key, value) {
+  const entry = getDataEntry(key);
+  const element = entry.element;
+  const decimals = (element.step.split(".")[1] || "").length;
+  value = Math.min(Number(element.max), Math.max(Number(element.min), value));
+  entry.value = String(Number(value.toFixed(decimals)));
+  element.dispatchEvent(EVENT_INPUT);
+}
+
+/**
+ * Multiplies the cover zoom by the given factor, moving by at least one step so
+ * that small zooms do not round back to themselves.
+ */
+function zoomCover(factor) {
+  const zoom = Number(getDataEntry("coverZoom").valueOrLkgOrPreset);
+  const next = zoom * factor;
+  return setCoverNumber(
+    "coverZoom",
+    factor > 1 ? Math.max(next, zoom + 0.01) : Math.min(next, zoom - 0.01)
+  );
 }
 
 /**

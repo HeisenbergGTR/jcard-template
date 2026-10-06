@@ -223,16 +223,58 @@
 }
 
 #jcard .template-cover {
-  height: var(--heightJCardCover);
+  display: block;
+  height: 100%;
   object-fit: cover;
+  transform: translate(
+      calc(var(--jCardCoverOffsetX, 0) * 1%),
+      calc(var(--jCardCoverOffsetY, 0) * 1%)
+    )
+    rotate(calc(var(--jCardCoverRotate, 0) * 1deg))
+    scale(
+      calc(var(--jCardCoverZoom, 1) * var(--coverFlipX)),
+      calc(var(--jCardCoverZoom, 1) * var(--coverFlipY))
+    );
+  width: 100%;
+}
+
+#jcard .template-cover-frame {
+  --coverFlipX: 1;
+  --coverFlipY: 1;
+  height: var(--heightJCardCover);
+  overflow: hidden;
   position: absolute;
+  touch-action: none;
   width: var(--lengthJCardCover);
 }
 
-#jcard .template-cover.fill {
+#jcard .template-cover-frame.fill {
   height: inherit;
   width: inherit;
   z-index: 1;
+}
+
+#jcard .template-cover-frame.flip-h {
+  --coverFlipX: -1;
+}
+
+#jcard .template-cover-frame.flip-v {
+  --coverFlipY: -1;
+}
+
+@media screen {
+  #jcard .template-cover-frame {
+    cursor: grab;
+  }
+
+  #jcard .template-cover-frame.dragging {
+    cursor: grabbing;
+  }
+
+  #jcard .template-cover-frame:focus-visible {
+    outline: 2px dashed Highlight;
+    outline-offset: -2px;
+  }
 }
 
 #jcard .template-fold-1 {

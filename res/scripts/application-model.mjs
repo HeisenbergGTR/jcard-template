@@ -32,7 +32,10 @@ export const application = Object.freeze({
   ),
   /** Form buttons. */
   buttons: Object.freeze({
+    coverAdjustReset: new FormButton({ id: "cover-adjust-reset" }),
     coverReset: new FormButton({ id: "cover-reset" }),
+    coverRotateLeft: new FormButton({ id: "cover-rotate-left" }),
+    coverRotateRight: new FormButton({ id: "cover-rotate-right" }),
     load: new FormButton({ id: "load" }),
     print: new FormButton({ id: "print" }),
     save: new FormButton({ id: "save" }),
@@ -86,6 +89,30 @@ export const application = Object.freeze({
       }),
       coverHeightFactor: new DataFormEntry({
         id: "cover-height-factor",
+        preset: 1,
+      }),
+      coverFlipH: new DataFormEntry({
+        id: "cover-flip-h",
+        preset: false,
+      }),
+      coverFlipV: new DataFormEntry({
+        id: "cover-flip-v",
+        preset: false,
+      }),
+      coverOffsetX: new DataFormEntry({
+        id: "cover-offset-x",
+        preset: 0,
+      }),
+      coverOffsetY: new DataFormEntry({
+        id: "cover-offset-y",
+        preset: 0,
+      }),
+      coverRotate: new DataFormEntry({
+        id: "cover-rotate",
+        preset: 0,
+      }),
+      coverZoom: new DataFormEntry({
+        id: "cover-zoom",
         preset: 1,
       }),
       fillCover: new DataFormEntry({
@@ -268,6 +295,7 @@ export const application = Object.freeze({
     boundaries: new JCardOutput({ class: "boundaries" }),
     contents: new JCardOutput({ class: "contents" }),
     cover: new JCardOutput({ class: "cover" }),
+    coverFrame: new JCardOutput({ class: "cover-frame" }),
     footer: new JCardOutput({ class: "footer" }),
     front: new JCardOutput({ class: "front" }),
     frontTitleGroup: new JCardOutput({ class: "front-title-group" }),

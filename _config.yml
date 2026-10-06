@@ -4,4 +4,4 @@ defaults:
       path: ""
     values:
       layout: "application"
-exclude: ["CHANGES", "Gemfile", "Gemfile.lock", "LICENSE", "README.md"]
+exclude: ["CHANGES", "DEVELOPMENT.md", "Gemfile", "Gemfile.lock", "LICENSE", "README.md", "ROADMAP.md"]
