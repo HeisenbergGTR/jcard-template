@@ -22,7 +22,7 @@ fine adjustments, and an album-art reference lookup.
   otherwise a message suggests Copy image + Ctrl+V.
 - Dragging selected text into fields is left alone.
 
-### 3. Cover crop and zoom (built and browser-tested, **not yet committed**)
+### 3. Cover crop and zoom (committed `e6c940b`)
 - New **Adjust** panel in Cover: Zoom, Move X/Y, Rotate (slider + number box
   each), ⟲90°/⟳90°, Flip ↔/↕, Reset adjustments.
 - On the card: drag to move, scroll to zoom. Click the cover, then use arrows
