@@ -1,0 +1,55 @@
+<form>
+  <section>
+    <p>Save the card as a high-resolution PNG or PDF without the print dialog.
+PNGs record their DPI, so they print at true size from other programs.</p>
+    <div class="group">
+      <div class="field column small" id="field-export-dpi">
+        <label for="input-export-dpi">Resolution:</label>
+        <div class="input short">
+          <select id="input-export-dpi">
+            <option value="150">150 DPI</option>
+            <option value="300" selected>300 DPI</option>
+            <option value="600">600 DPI</option>
+          </select>
+        </div>
+      </div>
+      <div class="field column small" id="field-export-area">
+        <label for="input-export-area">Area:</label>
+        <div class="input short">
+          <select id="input-export-area">
+            <option value="marks" selected>With crop marks</option>
+            <option value="bleed">With bleed</option>
+            <option value="trim">Card only</option>
+          </select>
+        </div>
+      </div>
+      <div class="field column small" id="field-export-paper">
+        <label for="input-export-paper">PDF paper:</label>
+        <div class="input short">
+          <select id="input-export-paper">
+            <option value="card">Card size</option>
+            <option value="letter" selected>US Letter</option>
+            <option value="a4">A4</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="group">
+      <button id="button-export-png" type="button">Download PNG</button>
+      <button id="button-export-pdf" type="button">Download PDF</button>
+    </div>
+    <p class="export-status" id="export-status" aria-live="polite"></p>
+  </section>
+  <section>
+    <h3>Sheet</h3>
+    <p>Collect different cards here, then save them together as one PDF,
+several to a page at true size. Cards use the resolution and area above.</p>
+    <div class="group">
+      <button id="button-sheet-add" type="button">Add this card to sheet</button>
+      <button id="button-sheet-pdf" type="button" disabled>Download sheet PDF</button>
+      <button id="button-sheet-clear" type="button" disabled>Clear sheet</button>
+    </div>
+    <ol class="sheet-list" id="sheet-list"></ol>
+    <p><i>The sheet lasts until you close or reload the page.</i></p>
+  </section>
+</form>

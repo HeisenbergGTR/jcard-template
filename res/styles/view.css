@@ -402,3 +402,20 @@ body.dropping::after {
   min-width: 0;
   width: auto;
 }
+
+.sheet-list > li {
+  align-items: center;
+  display: flex;
+  gap: 0.5em;
+  margin-block: 0.25em;
+}
+
+.sheet-list > li > img {
+  border: 1px solid var(--colorAccentMid, gray);
+  height: 3em;
+  width: auto;
+}
+
+.sheet-list > li > button {
+  margin-inline-start: auto;
+}

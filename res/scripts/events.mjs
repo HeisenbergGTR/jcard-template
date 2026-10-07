@@ -44,6 +44,15 @@ import {
   toCssFontList,
 } from "./fonts.mjs";
 import {
+  addToSheet,
+  clearSheet,
+  downloadPdf,
+  downloadPng,
+  downloadSheetPdf,
+  removeFromSheet,
+  renderCard,
+} from "./export.mjs";
+import {
   BUILT_IN_PRESETS,
   applyStyle,
   deleteStyle,
@@ -103,6 +112,7 @@ export function setupEvents() {
   setupButtonEvents();
   setupCoverEvents();
   setupEntryEvents();
+  setupExportEvents();
   setupFileEvents();
   setupFontEvents();
   setupFormEvents();
@@ -360,6 +370,95 @@ function setupFileEvents() {
 function hasDropPayload(transfer) {
   return (
     transfer.types.includes("Files") || transfer.types.includes("text/uri-list")
+  );
+}
+
+/** Adds listeners for the Export section. */
+function setupExportEvents() {
+  const byId = (id) => document.getElementById(id);
+  const status = byId("export-status");
+  const list = byId("sheet-list");
+  const buttons = ["export-png", "export-pdf", "sheet-add"].map((id) =>
+    byId("button-" + id)
+  );
+  const render = () =>
+    renderCard(
+      Number(byId("input-export-dpi").value),
+      byId("input-export-area").value
+    );
+  const describe = (result) =>
+    result.canvas.width +
+    " × " +
+    result.canvas.height +
+    " px, " +
+    result.widthIn.toFixed(2) +
+    " × " +
+    result.heightIn.toFixed(2) +
+    " in at " +
+    result.dpi +
+    " DPI";
+  // Runs the given export step, showing progress and failures.
+  const run = (step) => {
+    buttons.forEach((button) => (button.disabled = true));
+    status.textContent = MESSAGES.exportWorking;
+    return render()
+      .then(step)
+      .catch((error) => {
+        status.textContent =
+          MESSAGES.exportFailed + ((error && error.message) || String(error));
+      })
+      .finally(() => buttons.forEach((button) => (button.disabled = false)));
+  };
+  const showSheet = (cards) => {
+    list.replaceChildren(
+      ...cards.map((card, index) => {
+        const item = document.createElement("li");
+        const image = new Image();
+        image.src = card.dataUrl;
+        image.alt = card.name;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () =>
+          showSheet(removeFromSheet(index))
+        );
+        item.append(image, document.createTextNode(card.name), remove);
+        return item;
+      })
+    );
+    byId("button-sheet-pdf").disabled = !cards.length;
+    byId("button-sheet-clear").disabled = !cards.length;
+  };
+  buttons[0].addEventListener("click", () =>
+    run((result) =>
+      downloadPng(result).then(() => {
+        status.textContent =
+          MESSAGES.exportDone + "PNG: " + describe(result) + ".";
+      })
+    )
+  );
+  buttons[1].addEventListener("click", () =>
+    run((result) =>
+      downloadPdf(result, byId("input-export-paper").value).then(() => {
+        status.textContent =
+          MESSAGES.exportDone + "PDF: " + describe(result) + ".";
+      })
+    )
+  );
+  buttons[2].addEventListener("click", () =>
+    run((result) => {
+      showSheet(addToSheet(result));
+      status.textContent = "";
+    })
+  );
+  byId("button-sheet-pdf").addEventListener("click", () => {
+    const paper = byId("input-export-paper").value;
+    downloadSheetPdf(paper === "card" ? "letter" : paper).catch((error) => {
+      status.textContent = MESSAGES.exportFailed + error.message;
+    });
+  });
+  byId("button-sheet-clear").addEventListener("click", () =>
+    showSheet(clearSheet())
   );
 }
 

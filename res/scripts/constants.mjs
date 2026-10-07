@@ -6,9 +6,14 @@
 
 /** Messages. */
 export const MESSAGES = Object.freeze({
+  exportDone: "Saved ",
+  exportFailed: "Export failed: ",
+  exportLibrary: "Could not load the export library. Check your connection.",
+  exportWorking: "Rendering…",
   fontBad: "Could not read that font file.",
   presetDelete: "Delete the saved style preset ",
   presetName: "Name this style preset:",
+  sheetFileName: "J-card sheet",
   storageFailed: "Browser storage failed:",
   autosaveFound: "Unsaved J-card from ",
   loadDiscard: "This discards any unsaved changes made to the current J-card.",
@@ -37,6 +42,24 @@ export const FILE_SIZE_MAX_SAFE = 268435456;
 export const HISTORY_DELAY = 500;
 /** Maximum undo steps. */
 export const HISTORY_MAX = 100;
+
+/** Export defaults and sizes in inches. */
+export const EXPORT = Object.freeze({
+  area: "marks",
+  blankImage:
+    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+  bleedIn: 0.1,
+  dpi: 300,
+  marksIn: 0.25,
+  pageMarginIn: 0.25,
+  papers: Object.freeze({ a4: [8.27, 11.69], letter: [8.5, 11] }),
+});
+/** Libraries loaded on first use. */
+export const LIBRARIES = Object.freeze({
+  htmlToImage:
+    "https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js",
+  jsPdf: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+});
 
 /** Generic CSS font families, which must not be quoted. */
 export const GENERIC_FONTS = Object.freeze([
