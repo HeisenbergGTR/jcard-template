@@ -35,6 +35,16 @@ export const HISTORY_DELAY = 500;
 /** Maximum undo steps. */
 export const HISTORY_MAX = 100;
 
+/** Text blocks with fine adjustments, by key, with their default line height. */
+export const TEXT_BLOCKS = Object.freeze({
+  back: 1.1,
+  footer: 1.1,
+  frontContents: 1.2,
+  frontTitle: 1.1,
+  note: 1.1,
+  spineTitle: 1.1,
+});
+
 /** Default cover image source. */
 export const COVER_IMAGE = "res/media/cover.png";
 

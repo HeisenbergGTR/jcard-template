@@ -4,7 +4,7 @@
  * Whenever available, use `application-functions` to operate on the model.
  */
 
-import { FILE_NAME } from "./constants.mjs";
+import { FILE_NAME, TEXT_BLOCKS } from "./constants.mjs";
 import { application as root } from "./roots.mjs";
 import { JCardOutput } from "./models.mjs";
 import { NUL_STRING } from "./common/constants.mjs";
@@ -15,6 +15,34 @@ import {
   FormButton,
   FormEntry,
 } from "./common/models.mjs";
+
+/**
+ * Returns fine adjustment data entries for each text block: offsets along and
+ * across the text in points, letter spacing in points, and line height.
+ */
+function makeTextAdjustEntries() {
+  const out = {};
+  Object.entries(TEXT_BLOCKS).forEach(([block, lineHeight]) => {
+    const id = block.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase());
+    out[block + "OffsetX"] = new DataFormEntry({
+      id: id + "-offset-x",
+      preset: 0,
+    });
+    out[block + "OffsetY"] = new DataFormEntry({
+      id: id + "-offset-y",
+      preset: 0,
+    });
+    out[block + "LetterSpacing"] = new DataFormEntry({
+      id: id + "-letter-spacing",
+      preset: 0,
+    });
+    out[block + "LineHeight"] = new DataFormEntry({
+      id: id + "-line-height",
+      preset: lineHeight,
+    });
+  });
+  return out;
+}
 
 /** Application model. */
 export const application = Object.freeze({
@@ -67,6 +95,7 @@ export const application = Object.freeze({
     }),
     /** Data. */
     data: Object.freeze({
+      ...makeTextAdjustEntries(),
       backContentsAlignment: new DataFormEntry({
         id: "back-contents-alignment",
         preset: "left",

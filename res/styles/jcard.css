@@ -495,3 +495,58 @@ form label > sup {
   font-weight: bold;
   src: url("../fonts/alte-haas-grotesk-bold.ttf") format("truetype");
 }
+
+/* Per-block fine adjustments. `translate` composes with existing transforms,
+   and acts in the block's own (possibly rotated) text direction. */
+#jcard .template-back > *,
+#jcard .template-contents,
+#jcard .template-footer,
+#jcard .template-front-title-group,
+#jcard .template-note-group,
+#jcard .template-spine-title-group {
+  letter-spacing: var(--blockLetterSpacing, normal);
+  line-height: var(--blockLineHeight);
+  translate: var(--blockOffsetX, 0) var(--blockOffsetY, 0);
+}
+
+#jcard .template-back > * {
+  --blockLetterSpacing: var(--jCardBackLetterSpacing);
+  --blockLineHeight: var(--jCardBackLineHeight, 1.1);
+  --blockOffsetX: var(--jCardBackOffsetX);
+  --blockOffsetY: var(--jCardBackOffsetY);
+}
+
+#jcard .template-contents {
+  --blockLetterSpacing: var(--jCardFrontContentsLetterSpacing);
+  --blockLineHeight: var(--jCardFrontContentsLineHeight, 1.2);
+  --blockOffsetX: var(--jCardFrontContentsOffsetX);
+  --blockOffsetY: var(--jCardFrontContentsOffsetY);
+}
+
+#jcard .template-footer {
+  --blockLetterSpacing: var(--jCardFooterLetterSpacing);
+  --blockLineHeight: var(--jCardFooterLineHeight, 1.1);
+  --blockOffsetX: var(--jCardFooterOffsetX);
+  --blockOffsetY: var(--jCardFooterOffsetY);
+}
+
+#jcard .template-front-title-group {
+  --blockLetterSpacing: var(--jCardFrontTitleLetterSpacing);
+  --blockLineHeight: var(--jCardFrontTitleLineHeight, 1.1);
+  --blockOffsetX: var(--jCardFrontTitleOffsetX);
+  --blockOffsetY: var(--jCardFrontTitleOffsetY);
+}
+
+#jcard .template-note-group {
+  --blockLetterSpacing: var(--jCardNoteLetterSpacing);
+  --blockLineHeight: var(--jCardNoteLineHeight, 1.1);
+  --blockOffsetX: var(--jCardNoteOffsetX);
+  --blockOffsetY: var(--jCardNoteOffsetY);
+}
+
+#jcard .template-spine-title-group {
+  --blockLetterSpacing: var(--jCardSpineTitleLetterSpacing);
+  --blockLineHeight: var(--jCardSpineTitleLineHeight, 1.1);
+  --blockOffsetX: var(--jCardSpineTitleOffsetX);
+  --blockOffsetY: var(--jCardSpineTitleOffsetY);
+}

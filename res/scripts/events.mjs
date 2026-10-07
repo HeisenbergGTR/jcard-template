@@ -4,7 +4,7 @@
  * A single call to `setupEvents` makes the magic happen.
  */
 
-import { FILE_NAME, MESSAGES } from "./constants.mjs";
+import { FILE_NAME, MESSAGES, TEXT_BLOCKS } from "./constants.mjs";
 import {
   isImageFile,
   loadFile,
@@ -238,6 +238,12 @@ function setupEntryEvents() {
   addStyleVariableListener(i, "coverOffsetY", OPTIONS_COALESCE);
   addStyleVariableListener(i, "coverRotate", OPTIONS_COALESCE);
   addStyleVariableListener(i, "coverZoom", OPTIONS_COALESCE);
+  Object.keys(TEXT_BLOCKS).forEach((block) => {
+    addStyleVariableListener(i, block + "OffsetX", OPTIONS_COALESCE_PT);
+    addStyleVariableListener(i, block + "OffsetY", OPTIONS_COALESCE_PT);
+    addStyleVariableListener(i, block + "LetterSpacing", OPTIONS_COALESCE_PT);
+    addStyleVariableListener(i, block + "LineHeight", OPTIONS_COALESCE);
+  });
   addStyleVariableListener(i, "fontFamily", OPTIONS_COALESCE);
   addStyleVariableListener(i, "footerAlignment", OPTIONS_COALESCE);
   addStyleVariableListener(i, "footerSize", OPTIONS_COALESCE_PT);
