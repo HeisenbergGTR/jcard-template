@@ -208,6 +208,10 @@ export const application = Object.freeze({
         id: "font-family",
         preset: "Alte Haas Grotesk",
       }),
+      titleFontFamily: new DataFormEntry({
+        id: "title-font-family",
+        preset: NUL_STRING,
+      }),
       footer: new DataFormEntry({
         id: "footer",
         preset: NUL_STRING,
@@ -418,6 +422,8 @@ export const application = Object.freeze({
     /** Cover image as a data URL, or null for the default cover. */
     cover: null,
     file: null,
+    /** Registered custom fonts as data URLs by family name. */
+    fonts: {},
     modified: false,
   }),
 });

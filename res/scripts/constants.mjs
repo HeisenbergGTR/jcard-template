@@ -6,7 +6,10 @@
 
 /** Messages. */
 export const MESSAGES = Object.freeze({
-  autosaveFailed: "Auto-save failed:",
+  fontBad: "Could not read that font file.",
+  presetDelete: "Delete the saved style preset ",
+  presetName: "Name this style preset:",
+  storageFailed: "Browser storage failed:",
   autosaveFound: "Unsaved J-card from ",
   loadDiscard: "This discards any unsaved changes made to the current J-card.",
   coverBadType: "That is not an image file: ",
@@ -35,6 +38,44 @@ export const HISTORY_DELAY = 500;
 /** Maximum undo steps. */
 export const HISTORY_MAX = 100;
 
+/** Generic CSS font families, which must not be quoted. */
+export const GENERIC_FONTS = Object.freeze([
+  "cursive",
+  "emoji",
+  "fangsong",
+  "fantasy",
+  "math",
+  "monospace",
+  "sans-serif",
+  "serif",
+  "system-ui",
+  "ui-monospace",
+  "ui-rounded",
+  "ui-sans-serif",
+  "ui-serif",
+]);
+/** Google Fonts offered by name and loaded on demand. */
+export const GOOGLE_FONTS = Object.freeze([
+  "Abril Fatface",
+  "Anton",
+  "Archivo Black",
+  "Bebas Neue",
+  "Caveat",
+  "Courier Prime",
+  "Monoton",
+  "Oswald",
+  "Permanent Marker",
+  "Playfair Display",
+  "Press Start 2P",
+  "Righteous",
+  "Roboto Condensed",
+  "Rock Salt",
+  "Shrikhand",
+  "Space Mono",
+  "Special Elite",
+  "VT323",
+]);
+
 /** Panel image slots besides the front cover. */
 export const ART_SLOTS = Object.freeze(["wrap", "back", "spine"]);
 /** Image filter keys, applied to the cover and each slot. */
@@ -59,6 +100,10 @@ export const regexps = Object.freeze({
   fileExtension: new RegExp(/(\.jcard)?\.json$/),
   /** Embedded cover image data URL. */
   coverData: new RegExp(/^data:image\/([\w.+-]+)[;,]/),
+  /** Font data URL. */
+  fontData: new RegExp(/^data:[^,]*,/),
+  /** Font file name extension. */
+  fontFile: new RegExp(/\.(otf|ttf|woff2?)$/i),
   /** Image MIME type. */
   imageType: new RegExp(/^image\//),
   /** Source file MIME type. */

@@ -385,3 +385,20 @@ body.dropping::after {
 .history-buttons > button:disabled {
   opacity: 0.4;
 }
+
+#field-style-preset .input.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+}
+
+#field-style-preset .input.preset-row > select {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+#field-style-preset .input.preset-row > button {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+}

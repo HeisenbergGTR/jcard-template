@@ -654,3 +654,8 @@ form label > sup {
   --artTurn: var(--jCardArtSpineTurn);
   --artZoom: var(--jCardArtSpineZoom);
 }
+
+#jcard .template-front-title-group,
+#jcard .template-spine-title-group {
+  font-family: var(--jCardTitleFontFamily, inherit);
+}

@@ -58,6 +58,24 @@
     <input id="input-font-family" type="text" list="list-font-family" maxlength="1023" />
     <datalist id="list-font-family">
       <option>Alte Haas Grotesk</option>
+      <option>Abril Fatface</option>
+      <option>Anton</option>
+      <option>Archivo Black</option>
+      <option>Bebas Neue</option>
+      <option>Caveat</option>
+      <option>Courier Prime</option>
+      <option>Monoton</option>
+      <option>Oswald</option>
+      <option>Permanent Marker</option>
+      <option>Playfair Display</option>
+      <option>Press Start 2P</option>
+      <option>Righteous</option>
+      <option>Roboto Condensed</option>
+      <option>Rock Salt</option>
+      <option>Shrikhand</option>
+      <option>Space Mono</option>
+      <option>Special Elite</option>
+      <option>VT323</option>
       <option>cursive</option>
       <option>emoji</option>
       <option>fangsong</option>
@@ -69,6 +87,30 @@
     </datalist>
   </div>
 </div>
+<div class="field row" id="field-title-font-family">
+  <label for="input-title-font-family">Title font:</label>
+  <div class="input fluid">
+    <input id="input-title-font-family" type="text" list="list-font-family" maxlength="1023" placeholder="Same as font family" />
+  </div>
+</div>
+<div class="field row" id="field-font-files">
+  <label for="input-font-files">Add fonts:</label>
+  <div class="input fluid">
+    <input id="input-font-files" type="file" accept=".ttf,.otf,.woff,.woff2" multiple />
+  </div>
+</div>
+<div class="field row" id="field-style-preset">
+  <label for="select-style-preset">Style preset:</label>
+  <div class="input fluid preset-row">
+    <select id="select-style-preset"></select>
+    <button id="button-style-apply" type="button">Apply</button>
+    <button id="button-style-save" type="button">Save as…</button>
+    <button id="button-style-delete" type="button" disabled>Delete</button>
+  </div>
+</div>
+<p><i>Google Fonts in the list load automatically, and font files you add (or
+drop on the page) stay in this browser. Presets restyle the card without
+changing its text or images.</i></p>
 {{closeColumn-}}
 {{openColumnShorter-}}
 <div class="field row {{-fieldRowShortClass}}" id="field-card-color">

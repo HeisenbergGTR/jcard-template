@@ -13,6 +13,7 @@ import {
 import { setupEvents } from "./events.mjs";
 import { MESSAGES } from "./constants.mjs";
 import { discardAutosave, offerAutosave, resetHistory } from "./history.mjs";
+import { loadFontLibrary } from "./fonts.mjs";
 import { EVENT_CHANGE } from "./common/constants.mjs";
 import { setWindowSubtitle } from "./common/functions.mjs";
 import {
@@ -97,6 +98,7 @@ Object.entries(PARAMS).forEach(([argument, handle]) => {
 });
 removeAnesthesia();
 resetHistory();
+loadFontLibrary();
 offerAutosave((time, restore) => {
   const banner = document.getElementById("autosave-banner");
   const hide = () => (banner.hidden = true);

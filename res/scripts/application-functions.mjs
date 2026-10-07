@@ -22,6 +22,7 @@ import {
   MESSAGES as COMMON_MESSAGES,
 } from "./common/constants.mjs";
 import { testFile } from "./common/functions.mjs";
+import { getUsedFonts, registerFonts } from "./fonts.mjs";
 import {
   download,
   populate,
@@ -92,6 +93,7 @@ export function loadReader() {
     getSource().element.disabled = false;
     return;
   }
+  registerFonts(data.fonts);
   populateDataSaves(data);
   if (typeof data.cover === "string" && regexps.coverData.test(data.cover)) {
     setCover(data.cover);
@@ -132,6 +134,10 @@ export function preserveDataSaves() {
   if (Object.keys(art).length) {
     out.art = art;
   }
+  const fonts = getUsedFonts(out.fontFamily, out.titleFontFamily);
+  if (Object.keys(fonts).length) {
+    out.fonts = fonts;
+  }
   return out;
 }
 
@@ -140,6 +146,7 @@ export function preserveDataSaves() {
  * cover, which is reset to the default when the snapshot has none.
  */
 export function restoreDataSaves(data) {
+  registerFonts(data.fonts);
   populateDataSaves(data);
   if (data.cover) {
     setCover(data.cover);

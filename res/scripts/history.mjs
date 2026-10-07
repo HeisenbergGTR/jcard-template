@@ -6,12 +6,9 @@
  * data URL string by reference, so large covers cost no extra memory.
  */
 
-import {
-  ART_SLOTS,
-  HISTORY_DELAY,
-  HISTORY_MAX,
-  MESSAGES,
-} from "./constants.mjs";
+import { ART_SLOTS, HISTORY_DELAY, HISTORY_MAX } from "./constants.mjs";
+import * as storage from "./storage.mjs";
+import { STORES } from "./storage.mjs";
 import {
   preserveDataSaves,
   restoreDataSaves,
@@ -20,8 +17,8 @@ import * as ECC from "./common/ecc.mjs";
 import { doAfterModify } from "./events.mjs";
 import { induceAnesthesia, removeAnesthesia } from "./common/events.mjs";
 
-/** IndexedDB database, store and record names. */
-const DB = Object.freeze({ name: "jcard-template", store: "autosave", key: 1 });
+/** Auto-save record key. */
+const AUTOSAVE_KEY = 1;
 
 /** Snapshots, oldest first. */
 let stack = [];
@@ -119,7 +116,7 @@ export function offerAutosave(prompt) {
 
 /** Forgets the auto-saved card. */
 export function discardAutosave() {
-  return withStore("readwrite", (store) => store.delete(DB.key));
+  return storage.remove(STORES.autosave, AUTOSAVE_KEY);
 }
 
 /** Loads the given snapshot into the card without recording it. */
@@ -142,7 +139,17 @@ function isSame(a, b) {
   if (ART_SLOTS.some((slot) => artA[slot] !== artB[slot])) {
     return false;
   }
-  const strip = (snapshot) => ({ ...snapshot, art: null, cover: null });
+  if (
+    Object.keys(a.fonts || {}).join() !== Object.keys(b.fonts || {}).join()
+  ) {
+    return false;
+  }
+  const strip = (snapshot) => ({
+    ...snapshot,
+    art: null,
+    cover: null,
+    fonts: null,
+  });
   return JSON.stringify(strip(a)) === JSON.stringify(strip(b));
 }
 
@@ -153,47 +160,10 @@ function notify() {
 
 /** Resolves with the auto-save record, or undefined. */
 function readAutosave() {
-  return withStore("readonly", (store) => store.get(DB.key));
+  return storage.get(STORES.autosave, AUTOSAVE_KEY);
 }
 
 /** Stores the given auto-save record. */
 function writeAutosave(record) {
-  return withStore("readwrite", (store) => store.put(record, DB.key));
-}
-
-/**
- * Runs the given request maker on the auto-save store and resolves with its
- * result. Storage failures, such as in private windows, resolve undefined.
- */
-function withStore(mode, makeRequest) {
-  return new Promise((resolve) => {
-    let open;
-    try {
-      open = indexedDB.open(DB.name, 1);
-    } catch (error) {
-      return resolve();
-    }
-    open.addEventListener("upgradeneeded", () =>
-      open.result.createObjectStore(DB.store)
-    );
-    open.addEventListener("error", () => resolve());
-    open.addEventListener("success", () => {
-      const db = open.result;
-      try {
-        const request = makeRequest(
-          db.transaction(DB.store, mode).objectStore(DB.store)
-        );
-        request.addEventListener("success", () => resolve(request.result));
-        request.addEventListener("error", () => {
-          console.warn(MESSAGES.autosaveFailed, request.error);
-          resolve();
-        });
-      } catch (error) {
-        console.warn(MESSAGES.autosaveFailed, error);
-        resolve();
-      } finally {
-        db.close();
-      }
-    });
-  });
+  return storage.put(STORES.autosave, AUTOSAVE_KEY, record);
 }

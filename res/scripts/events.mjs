@@ -38,6 +38,19 @@ import {
 } from "./application-functions.mjs";
 import { setBackContents, setFrontContents } from "./edits.mjs";
 import {
+  addFontFile,
+  isFontFile,
+  requestGoogleFonts,
+  toCssFontList,
+} from "./fonts.mjs";
+import {
+  BUILT_IN_PRESETS,
+  applyStyle,
+  deleteStyle,
+  getSavedPresets,
+  saveStyle,
+} from "./presets.mjs";
+import {
   markSaved,
   redo,
   resetHistory,
@@ -91,7 +104,9 @@ export function setupEvents() {
   setupCoverEvents();
   setupEntryEvents();
   setupFileEvents();
+  setupFontEvents();
   setupFormEvents();
+  setupPresetEvents();
   setupViewEvents();
   setupWindowEvents();
 }
@@ -253,7 +268,8 @@ function setupEntryEvents() {
     addStyleVariableListener(i, block + "LetterSpacing", OPTIONS_COALESCE_PT);
     addStyleVariableListener(i, block + "LineHeight", OPTIONS_COALESCE);
   });
-  addStyleVariableListener(i, "fontFamily", OPTIONS_COALESCE);
+  addFontListener(i.fontFamily, "--jCardFontFamily");
+  addFontListener(i.titleFontFamily, "--jCardTitleFontFamily");
   addStyleVariableListener(i, "footerAlignment", OPTIONS_COALESCE);
   addStyleVariableListener(i, "footerSize", OPTIONS_COALESCE_PT);
   addStyleVariableListener(i, "frontContentsAlignment", OPTIONS_COALESCE);
@@ -303,9 +319,12 @@ function setupFileEvents() {
     document.body.classList.remove("dropping");
     const transfer = event.dataTransfer;
     const files = Array.from(transfer.files);
-    const data = files.find((file) => !isImageFile(file));
+    const fonts = files.filter(isFontFile);
+    const data = files.find((file) => !isImageFile(file) && !isFontFile(file));
     const image = files.find(isImageFile);
-    if (data) {
+    if (fonts.length) {
+      applyFontFiles(fonts);
+    } else if (data) {
       loadFile([data]);
     } else if (image) {
       const slot = getDropSlot(event);
@@ -342,6 +361,109 @@ function hasDropPayload(transfer) {
   return (
     transfer.types.includes("Files") || transfer.types.includes("text/uri-list")
   );
+}
+
+/** Adds listeners for adding font files. */
+function setupFontEvents() {
+  document.getElementById("input-font-files").addEventListener(
+    "change",
+    (event) => {
+      applyFontFiles(Array.from(event.target.files));
+      event.target.value = "";
+    }
+  );
+}
+
+/**
+ * Adds the given font files to the library, then uses the last one as the
+ * card's font family.
+ */
+function applyFontFiles(files) {
+  return Promise.all(
+    files.map((file) => addFontFile(file).catch(() => null))
+  ).then((names) => {
+    const name = names.filter(Boolean).pop();
+    if (!name) {
+      alert(MESSAGES.fontBad);
+      return;
+    }
+    const entry = getDataEntry("fontFamily");
+    entry.value = name;
+    entry.element.dispatchEvent(EVENT_INPUT);
+  });
+}
+
+/**
+ * Adds an input event listener to the given font family entry that sets the
+ * given style variable to it as a valid CSS font list, loading any Google
+ * Fonts it names. An empty list removes the variable.
+ */
+function addFontListener(entry, variable) {
+  entry.element.addEventListener(
+    "input",
+    makeHandler(() => {
+      doBeforeEdit(entry);
+      const value = String(entry.valueOrLkgOrPreset);
+      requestGoogleFonts(value);
+      getRoot().element.style.setProperty(variable, toCssFontList(value));
+      return doAfterEdit(entry);
+    }, OPTIONS_COALESCE)
+  );
+}
+
+/** Adds listeners for the style preset picker. */
+function setupPresetEvents() {
+  const select = document.getElementById("select-style-preset");
+  const remove = document.getElementById("button-style-delete");
+  const BUILT_IN = "built-in:";
+  const SAVED = "saved:";
+  let saved = new Map();
+  const fill = (selected) =>
+    getSavedPresets().then((entries) => {
+      saved = new Map(entries);
+      const group = (label, prefix, names) => {
+        const element = document.createElement("optgroup");
+        element.label = label;
+        names.forEach((name) => element.append(new Option(name, prefix + name)));
+        return element;
+      };
+      select.replaceChildren(
+        group("Built-in", BUILT_IN, Object.keys(BUILT_IN_PRESETS))
+      );
+      if (saved.size) {
+        select.append(group("Saved", SAVED, Array.from(saved.keys())));
+      }
+      if (selected) {
+        select.value = selected;
+      }
+      remove.disabled = !select.value.startsWith(SAVED);
+    });
+  select.addEventListener("change", () => {
+    remove.disabled = !select.value.startsWith(SAVED);
+  });
+  document.getElementById("button-style-apply").addEventListener("click", () => {
+    const value = select.value;
+    const style = value.startsWith(SAVED)
+      ? saved.get(value.substring(SAVED.length))
+      : BUILT_IN_PRESETS[value.substring(BUILT_IN.length)];
+    if (style) {
+      applyStyle(style);
+      doAfterModify({ save: true });
+    }
+  });
+  document.getElementById("button-style-save").addEventListener("click", () => {
+    const name = (prompt(MESSAGES.presetName) || "").trim();
+    if (name) {
+      saveStyle(name).then(() => fill(SAVED + name));
+    }
+  });
+  remove.addEventListener("click", () => {
+    const name = select.value.substring(SAVED.length);
+    if (select.value.startsWith(SAVED) && confirm(MESSAGES.presetDelete + name)) {
+      deleteStyle(name).then(() => fill());
+    }
+  });
+  fill();
 }
 
 /** Adds listeners for the panel image slots. */
