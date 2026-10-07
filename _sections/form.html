@@ -1,5 +1,14 @@
 {%-include_relative _sections/sections/injections.html-%}
 <form>
+<div class="autosave-banner" id="autosave-banner" hidden>
+  <span id="autosave-text"></span>
+  <button id="button-autosave-restore" type="button">Restore</button>
+  <button id="button-autosave-discard" type="button">Discard</button>
+</div>
+<div class="group history-buttons">
+  <button id="button-undo" type="button" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+  <button id="button-redo" type="button" title="Redo (Ctrl+Y)" disabled>↷ Redo</button>
+</div>
 <section>
 {{openColumns-}}
 {{openColumnFluid-}}

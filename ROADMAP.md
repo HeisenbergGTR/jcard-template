@@ -55,6 +55,26 @@ fine adjustments, and an album-art reference lookup.
   normal browser.
 - This is the manual step before #10 (in-app lookup).
 
+### 7. Undo/redo and auto-save
+- ↶ Undo / ↷ Redo buttons at the top of the form, plus Ctrl+Z, and Ctrl+Y or
+  Ctrl+Shift+Z. Inside text boxes, Ctrl+Z still undoes typing in that box.
+- Whole-card snapshots are taken after 0.5 s of quiet (up to 100 steps) and
+  include the cover. They share the cover string, so big images cost no
+  extra memory.
+- Each snapshot is auto-saved to IndexedDB. On the next visit, a banner offers
+  Restore or Discard. Saving a file marks the auto-save as saved, so no
+  banner appears after that.
+- Code: `res/scripts/history.mjs`.
+
+### Grid snapping for cover adjustments
+- **Snap to grid** switch (on by default) and **Grid (%)** size (default 5).
+  These are app preferences, not saved with the card.
+- When dragging, the cover centre snaps to grid lines and its edges snap to the
+  frame edges. Grid lines show while dragging or while the cover is focused.
+- Ctrl while dragging moves freely. Arrows jump to the next grid line, Shift
+  jumps 5 lines, and Ctrl+arrow nudges 0.1%.
+- Ctrl is used rather than Alt, because Alt+← means "go back" in browsers.
+
 ## Remaining ideas
 
 ### Images
@@ -67,9 +87,6 @@ fine adjustments, and an album-art reference lookup.
 6. **Precise nudging everywhere.** Sliders next to number boxes (the generic
    `input[type=range][data-for]` sync already exists, so reuse it). Each text
    block gets its own position offsets, letter spacing and line height.
-7. **Undo/redo and auto-save.** Ctrl+Z / Ctrl+Y history. Auto-save the work
-   in progress (IndexedDB, since covers are large) and offer to restore it
-   after a crash or a closed tab.
 8. **Fonts and presets.** Drag in custom font files (.ttf/.otf/.woff) and pick
    from a few Google Fonts. Layout presets ("Minimal", "Retro retail",
    "Mixtape handwritten") plus saving your own.

@@ -30,6 +30,14 @@ import {
 } from "./application-functions.mjs";
 import { setBackContents, setFrontContents } from "./edits.mjs";
 import {
+  markSaved,
+  redo,
+  resetHistory,
+  scheduleSnapshot,
+  setHistoryListener,
+  undo,
+} from "./history.mjs";
+import {
   NUL_OBJECT,
   EVENT_CHANGE,
   EVENT_INPUT,
@@ -83,6 +91,7 @@ export function setupEvents() {
 export function doAfterModify(entry) {
   addBeforeUnloadListenerBy(entry);
   setModifiedBy(entry);
+  scheduleSnapshot();
 }
 
 /** For use during the window `beforeunload` event. */
@@ -110,14 +119,26 @@ function setupButtonEvents() {
     loadFile(getInputSafeValue(event.target))
   );
   addActionListener(buttons.coverAdjustReset, resetCoverAdjustments);
-  addActionListener(buttons.coverReset, resetCover);
+  addActionListener(buttons.coverReset, () => {
+    resetCover();
+    scheduleSnapshot();
+  });
   addActionListener(buttons.coverRotateLeft, () => rotateCover(-90));
   addActionListener(buttons.coverRotateRight, () => rotateCover(90));
   addActionListener(buttons.print, testAndPrint);
-  addActionListener(buttons.save, saveDataSaves);
+  addActionListener(buttons.redo, redo);
+  addActionListener(buttons.save, () => {
+    saveDataSaves();
+    markSaved();
+  });
   addActionListener(buttons.saveCover, saveCover);
   addActionListener(buttons.viewCollapse, collapseAll);
   addActionListener(buttons.viewExpand, expandAll);
+  addActionListener(buttons.undo, undo);
+  setHistoryListener((canUndo, canRedo) => {
+    buttons.undo.element.disabled = !canUndo;
+    buttons.redo.element.disabled = !canRedo;
+  });
 }
 
 /** Adds listeners to entries that update outputs. */
@@ -147,6 +168,12 @@ function setupEntryEvents() {
     OPTIONS_COALESCE_INVERT
   );
   addClassListener(i.bold, o.root, "bold", OPTIONS_COALESCE);
+  addClassListener(getApplicationEntry("coverSnap"), o.coverFrame, "snap-grid");
+  addStyleVariableListener(
+    getApplicationEntries(),
+    "coverGrid",
+    OPTIONS_COALESCE
+  );
   addClassListener(i.coverFlipH, o.coverFrame, "flip-h", OPTIONS_COALESCE);
   addClassListener(i.coverFlipV, o.coverFrame, "flip-v", OPTIONS_COALESCE);
   addClassListener(i.fillCover, o.coverFrame, "fill", OPTIONS_COALESCE);
@@ -237,6 +264,7 @@ function setupFileEvents() {
     loadReader();
     ECC.flush();
     removeAnesthesia();
+    resetHistory();
   });
   let dragTimeout;
   document.addEventListener("dragover", (event) => {
@@ -380,6 +408,27 @@ function setupWindowEvents() {
     );
   });
   window.addEventListener("afterprint", undoPrint);
+  document.addEventListener("keydown", (event) => {
+    const key = event.key.toLowerCase();
+    if (
+      !(event.ctrlKey || event.metaKey) ||
+      event.altKey ||
+      (key !== "z" && key !== "y")
+    ) {
+      return;
+    }
+    // Text boxes keep their own undo for typing.
+    if (
+      event.target instanceof Element &&
+      event.target.matches(
+        'textarea, input:not([type]), input[type="text"], input[type="search"]'
+      )
+    ) {
+      return;
+    }
+    event.preventDefault();
+    key === "y" || event.shiftKey ? redo() : undo();
+  });
 }
 
 /** CSS pixels per inch. */
@@ -426,19 +475,27 @@ function setupCoverEvents() {
       return;
     }
     const rect = frame.getBoundingClientRect();
+    const free = event.ctrlKey;
+    frame.classList.toggle("free", free);
     setCoverNumber(
       "coverOffsetX",
-      drag.offsetX + ((event.clientX - drag.x) / rect.width) * 100
+      snapOffset(
+        drag.offsetX + ((event.clientX - drag.x) / rect.width) * 100,
+        free
+      )
     );
     setCoverNumber(
       "coverOffsetY",
-      drag.offsetY + ((event.clientY - drag.y) / rect.height) * 100
+      snapOffset(
+        drag.offsetY + ((event.clientY - drag.y) / rect.height) * 100,
+        free
+      )
     );
   });
   ["pointerup", "pointercancel"].forEach((type) => {
     frame.addEventListener(type, () => {
       drag = null;
-      frame.classList.remove("dragging");
+      frame.classList.remove("dragging", "free");
     });
   });
   frame.addEventListener(
@@ -451,19 +508,18 @@ function setupCoverEvents() {
   );
   frame.addEventListener("keydown", (event) => {
     const big = event.shiftKey;
-    const nudge = big ? 5 : 0.5;
     switch (event.key) {
       case "ArrowLeft":
-        nudgeCover("coverOffsetX", -nudge);
+        nudgeCover("coverOffsetX", -1, event);
         break;
       case "ArrowRight":
-        nudgeCover("coverOffsetX", nudge);
+        nudgeCover("coverOffsetX", 1, event);
         break;
       case "ArrowUp":
-        nudgeCover("coverOffsetY", -nudge);
+        nudgeCover("coverOffsetY", -1, event);
         break;
       case "ArrowDown":
-        nudgeCover("coverOffsetY", nudge);
+        nudgeCover("coverOffsetY", 1, event);
         break;
       case "+":
       case "=":
@@ -570,11 +626,55 @@ function updateCoverQuality() {
   element.classList.add(quality.name);
 }
 
-/** Adds the given amount to the cover number entry by its key. */
-function nudgeCover(key, amount) {
-  return setCoverNumber(
-    key,
-    Number(getDataEntry(key).valueOrLkgOrPreset) + amount
+/**
+ * Nudges the cover offset by its key in the given direction (1 or -1) for the
+ * given key event: Ctrl for fine steps, Shift for big steps, and otherwise to
+ * the next grid line when snapping.
+ */
+function nudgeCover(key, direction, event) {
+  const value = Number(getDataEntry(key).valueOrLkgOrPreset);
+  if (event.ctrlKey) {
+    return setCoverNumber(key, value + direction * 0.1);
+  }
+  if (isSnapping()) {
+    const step = getGrid() * (event.shiftKey ? 5 : 1);
+    const lines = value / step;
+    const next =
+      direction > 0
+        ? Math.floor(lines + 1e-6) + 1
+        : Math.ceil(lines - 1e-6) - 1;
+    return setCoverNumber(key, next * step);
+  }
+  return setCoverNumber(key, value + direction * (event.shiftKey ? 5 : 0.5));
+}
+
+/** Returns the snap grid size in percent of the cover frame. */
+function getGrid() {
+  return (
+    Number(getApplicationEntry("coverGrid").valueOrLkgOrPreset) ||
+    getApplicationEntry("coverGrid").preset
+  );
+}
+
+/** Returns whether cover snapping is on. */
+function isSnapping() {
+  return Boolean(getApplicationEntry("coverSnap").valueOrLkgOrPreset);
+}
+
+/**
+ * Returns the given cover offset snapped to the nearest grid line or to where
+ * the cover edges meet the frame edges, unless free or snapping is off.
+ */
+function snapOffset(value, free = false) {
+  if (free || !isSnapping()) {
+    return value;
+  }
+  const grid = getGrid();
+  const zoom = Number(getDataEntry("coverZoom").valueOrLkgOrPreset) || 1;
+  const edge = Math.abs(zoom - 1) * 50;
+  return [Math.round(value / grid) * grid, edge, -edge].reduce(
+    (best, target) =>
+      Math.abs(target - value) < Math.abs(best - value) ? target : best
   );
 }
 

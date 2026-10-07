@@ -12,6 +12,8 @@ import {
   getViewEntry,
 } from "./application-functions.mjs";
 import { setupEvents } from "./events.mjs";
+import { MESSAGES } from "./constants.mjs";
+import { discardAutosave, offerAutosave, resetHistory } from "./history.mjs";
 import { EVENT_CHANGE } from "./common/constants.mjs";
 import { setWindowSubtitle } from "./common/functions.mjs";
 import {
@@ -91,3 +93,27 @@ Object.entries(PARAMS).forEach(([argument, handle]) => {
   }
 });
 removeAnesthesia();
+resetHistory();
+offerAutosave((time, restore) => {
+  const banner = document.getElementById("autosave-banner");
+  const hide = () => (banner.hidden = true);
+  document.getElementById("autosave-text").textContent =
+    MESSAGES.autosaveFound + time.toLocaleString() + ".";
+  document.getElementById("button-autosave-restore").addEventListener(
+    "click",
+    () => {
+      restore();
+      hide();
+    },
+    { once: true }
+  );
+  document.getElementById("button-autosave-discard").addEventListener(
+    "click",
+    () => {
+      discardAutosave();
+      hide();
+    },
+    { once: true }
+  );
+  banner.hidden = false;
+});

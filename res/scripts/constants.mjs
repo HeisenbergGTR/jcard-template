@@ -6,6 +6,8 @@
 
 /** Messages. */
 export const MESSAGES = Object.freeze({
+  autosaveFailed: "Auto-save failed:",
+  autosaveFound: "Unsaved J-card from ",
   loadDiscard: "This discards any unsaved changes made to the current J-card.",
   coverBadType: "That is not an image file: ",
   coverFetch:
@@ -27,6 +29,11 @@ export const FILE_NAME_LENGTH_MAX = 255 - FILE_EXTENSION.length;
 export const FILE_NAME = "Unnamed";
 /** Maximum safe file size in bytes. Data files may embed the cover image. */
 export const FILE_SIZE_MAX_SAFE = 268435456;
+
+/** Milliseconds of quiet before an edit is recorded for undo. */
+export const HISTORY_DELAY = 500;
+/** Maximum undo steps. */
+export const HISTORY_MAX = 100;
 
 /** Default cover image source. */
 export const COVER_IMAGE = "res/media/cover.png";

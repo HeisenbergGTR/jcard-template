@@ -271,6 +271,33 @@
     cursor: grabbing;
   }
 
+  #jcard .template-cover-frame.snap-grid.dragging:not(.free)::after,
+  #jcard .template-cover-frame.snap-grid:focus:not(.free)::after {
+    --lineCoverGrid: rgb(255 255 255 / 0.55);
+    --sizeCoverGrid: calc(var(--jCardCoverGrid, 5) * 1%);
+    background-image: linear-gradient(
+        to right,
+        transparent calc(50% - 0.5px),
+        var(--lineCoverGrid) calc(50% - 0.5px),
+        var(--lineCoverGrid) calc(50% + 0.5px),
+        transparent calc(50% + 0.5px)
+      ),
+      linear-gradient(
+        to bottom,
+        transparent calc(50% - 0.5px),
+        var(--lineCoverGrid) calc(50% - 0.5px),
+        var(--lineCoverGrid) calc(50% + 0.5px),
+        transparent calc(50% + 0.5px)
+      );
+    background-position: center;
+    background-size: var(--sizeCoverGrid) 100%, 100% var(--sizeCoverGrid);
+    content: "";
+    filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.8));
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
   #jcard .template-cover-frame:focus-visible {
     outline: 2px dashed Highlight;
     outline-offset: -2px;

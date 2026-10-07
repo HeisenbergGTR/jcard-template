@@ -124,6 +124,22 @@ export function preserveDataSaves() {
   return out;
 }
 
+/**
+ * Sets the card to the given snapshot from `preserveDataSaves`, including its
+ * cover, which is reset to the default when the snapshot has none.
+ */
+export function restoreDataSaves(data) {
+  populateDataSaves(data);
+  if (data.cover) {
+    setCover(data.cover);
+  } else {
+    getDataEntry("coverImage").value = NUL_STRING;
+    application.instance.cover = null;
+    getOutput("cover").element.src = COVER_IMAGE;
+  }
+  updateData();
+}
+
 /** Saves data form entries that are to be saved as a file download. */
 export function saveDataSaves() {
   return save(preserveDataSaves, getCardName());

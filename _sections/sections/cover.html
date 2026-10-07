@@ -76,9 +76,25 @@
   </div>
   <button id="button-cover-adjust-reset" type="button">Reset adjustments</button>
 </div>
+<div class="group">
+  <div class="field switch" id="field-cover-snap">
+    <div class="input">
+      <input id="input-cover-snap" type="checkbox" />
+    </div>
+    <label for="input-cover-snap">Snap to grid</label>
+  </div>
+  <div class="field row small" id="field-cover-grid">
+    <label for="input-cover-grid">Grid (%):</label>
+    <div class="input shorter">
+      <input id="input-cover-grid" type="number" min="0.5" max="50" step="0.5" />
+    </div>
+  </div>
+</div>
 <p><i>On the card: drag the cover to move it and scroll over it to zoom. Click
 it, then use the arrow keys to nudge, + and − to zoom, [ and ] to rotate, and 0
-to reset. Hold Shift for bigger steps.</i></p>
+to reset. Hold Shift for bigger steps. With snapping on, the cover's centre
+snaps to the grid and its edges snap to the frame; hold Ctrl while dragging to
+move freely, and Ctrl + arrows nudge in fine 0.1% steps.</i></p>
 </section>
 <section>
   <p>Cover images are saved with the J-card at full quality. You can also drop

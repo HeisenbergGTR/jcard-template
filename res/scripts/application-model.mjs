@@ -38,14 +38,24 @@ export const application = Object.freeze({
     coverRotateRight: new FormButton({ id: "cover-rotate-right" }),
     load: new FormButton({ id: "load" }),
     print: new FormButton({ id: "print" }),
+    redo: new FormButton({ id: "redo" }),
     save: new FormButton({ id: "save" }),
     saveCover: new FormButton({ id: "save-cover" }),
+    undo: new FormButton({ id: "undo" }),
     viewCollapse: new FormButton({ id: "view-collapse" }),
     viewExpand: new FormButton({ id: "view-expand" }),
   }),
   /** Form entries. */
   entries: Object.freeze({
     application: Object.freeze({
+      coverGrid: new FormEntry({
+        id: "cover-grid",
+        preset: 5,
+      }),
+      coverSnap: new FormEntry({
+        id: "cover-snap",
+        preset: true,
+      }),
       ecc: new FormEntry({
         id: "application-ecc",
         preset: false,
