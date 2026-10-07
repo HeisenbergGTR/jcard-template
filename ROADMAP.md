@@ -35,14 +35,29 @@ fine adjustments, and an album-art reference lookup.
 - Open question: should scroll-zoom require Ctrl so it doesn't catch page
   scrolling?
 
+### 4. Print-quality (DPI) readout
+- The Cover section shows the effective DPI live, colour-coded: Sharp ✓
+  (300+), Good (200+), May look soft (150+), Will look blurry.
+- It accounts for the cover area (height factor, Fill cover), the image's
+  crop-to-fill scaling, and zoom. Below 300 DPI it says the pixel size needed.
+- Still open: a downscaled preview while editing huge scans (6000 px+), if
+  dragging ever feels slow.
+
+### Cover art reference links
+- A **Find Cover Art** section in Cover lists 10 sources: COV (Music
+  Hoarders), MusicBrainz / Cover Art Archive, Discogs (cassette filter),
+  iTunes Artwork Finder, Album Art Exchange, Bandcamp, Last.fm, fanart.tv,
+  Google Images (large) and Tapedeck.org.
+- The 🔍 links pre-fill searches from the card titles (lower title = artist,
+  upper = album). The others link to the homepage, because their search URLs
+  couldn't be verified.
+- Album Art Exchange returned 403 to automated checks; confirm it opens in a
+  normal browser.
+- This is the manual step before #10 (in-app lookup).
+
 ## Remaining ideas
 
 ### Images
-4. **Print-quality (DPI) readout.** The front cover is about 2.556 × 4 in, so
-   it needs about 770 × 1200 px for 300 DPI. Show live "312 DPI ✓" or
-   "96 DPI – blurry" that accounts for zoom. Keep huge scans (6000 px+)
-   smooth, for example with a downscaled preview while editing and full
-   resolution for print/export.
 5. **Images on spine and back, and full-wrap art.** A separate image or
    background per panel, plus one image across all three panels like retail
    J-cards. Basic filters: brightness, contrast, saturation, greyscale,

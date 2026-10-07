@@ -338,3 +338,28 @@ body.dropping::after {
   min-width: 0;
   width: 5.5em;
 }
+
+.cover-quality {
+  border-inline-start: 0.3em solid var(--colorQuality, gray);
+  padding-inline-start: 0.5em;
+}
+
+.cover-quality.sharp {
+  --colorQuality: #2a9d4b;
+}
+
+.cover-quality.good {
+  --colorQuality: #8cb83a;
+}
+
+.cover-quality.soft {
+  --colorQuality: #e0a020;
+}
+
+.cover-quality.blurry {
+  --colorQuality: #d0453a;
+}
+
+.art-sources > li {
+  margin-block: 0.4em;
+}

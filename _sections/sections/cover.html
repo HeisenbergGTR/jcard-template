@@ -26,6 +26,10 @@
 {{closeColumns-}}
 </section>
 <section>
+<h4>Print Quality</h4>
+<p class="cover-quality" id="cover-quality" aria-live="polite"></p>
+</section>
+<section>
 <h4>Adjust</h4>
 <div class="field row" id="field-cover-zoom">
   <label for="input-cover-zoom">Zoom (×):</label>
@@ -79,4 +83,25 @@ to reset. Hold Shift for bigger steps.</i></p>
 <section>
   <p>Cover images are saved with the J-card at full quality. You can also drop
 an image anywhere on the page, or copy one and press Ctrl+V.</p>
+</section>
+<section>
+<details>
+<summary><h4>Find Cover Art</h4></summary>
+<p>Links marked with a magnifier (🔍) search using the card's titles, with the
+lower title as the artist and the upper title as the album. Save or copy the
+image you want, then drop or paste it here. Album art is copyrighted, so only
+print it for your own tapes.</p>
+<ol class="art-sources">
+  <li><a href="https://covers.musichoarders.xyz/" data-search="https://covers.musichoarders.xyz/?artist={artist}&amp;album={album}" target="_blank" rel="noopener">COV (Music Hoarders)</a>: searches many stores at once and shows full-size resolutions. 🔍</li>
+  <li><a href="https://musicbrainz.org/" data-search="https://musicbrainz.org/search?query={artist}%20{album}&amp;type=release" target="_blank" rel="noopener">MusicBrainz / Cover Art Archive</a>: open database with original-resolution scans, often including cassette releases and track lists. 🔍</li>
+  <li><a href="https://www.discogs.com/" data-search="https://www.discogs.com/search/?q={artist}%20{album}&amp;type=all&amp;format_exact=Cassette" target="_blank" rel="noopener">Discogs</a>: the biggest cassette catalogue, with photos of real J-cards (search filtered to cassettes). 🔍</li>
+  <li><a href="https://bendodson.com/projects/itunes-artwork-finder/" target="_blank" rel="noopener">iTunes Artwork Finder</a>: clean, square Apple Music artwork, often 3000 px or more.</li>
+  <li><a href="https://www.albumartexchange.com/" target="_blank" rel="noopener">Album Art Exchange</a>: user-submitted high-resolution scans and restorations.</li>
+  <li><a href="https://bandcamp.com/" data-search="https://bandcamp.com/search?q={artist}%20{album}&amp;item_type=a" target="_blank" rel="noopener">Bandcamp</a>: independent releases; the album page's art opens at full size. 🔍</li>
+  <li><a href="https://www.last.fm/" data-search="https://www.last.fm/search/albums?q={artist}%20{album}" target="_blank" rel="noopener">Last.fm</a>: broad coverage, including obscure releases. 🔍</li>
+  <li><a href="https://fanart.tv/" target="_blank" rel="noopener">fanart.tv</a>: artist logos, CD art and backgrounds, which are handy for spines and backs.</li>
+  <li><a href="https://www.google.com/imghp" data-search="https://www.google.com/search?tbm=isch&amp;tbs=isz:l&amp;q={artist}%20{album}%20album%20cover" target="_blank" rel="noopener">Google Images (large)</a>: a catch-all, limited to large images. 🔍</li>
+  <li><a href="https://www.tapedeck.org/" target="_blank" rel="noopener">Tapedeck.org</a>: a gallery of vintage blank-cassette designs for retro inspiration.</li>
+</ol>
+</details>
 </section>

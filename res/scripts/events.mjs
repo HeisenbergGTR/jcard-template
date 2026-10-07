@@ -382,10 +382,29 @@ function setupWindowEvents() {
   window.addEventListener("afterprint", undoPrint);
 }
 
+/** CSS pixels per inch. */
+const PX_PER_IN = 96;
+/** Print quality bands by minimum DPI, best first. */
+const QUALITIES = Object.freeze([
+  { dpi: 300, name: "sharp", label: "Sharp ✓" },
+  { dpi: 200, name: "good", label: "Good" },
+  { dpi: 150, name: "soft", label: "May look soft" },
+  { dpi: 0, name: "blurry", label: "Will look blurry" },
+]);
+/** Target DPI for print quality advice. */
+const DPI_TARGET = 300;
+
 /** Adds pointer, wheel and keyboard controls to the cover on the card. */
 function setupCoverEvents() {
   const frame = getOutputs().coverFrame.element;
   let drag = null;
+  getOutputs().cover.element.addEventListener("load", updateCoverQuality);
+  getDataEntry("coverZoom").element.addEventListener(
+    "input",
+    updateCoverQuality
+  );
+  new ResizeObserver(updateCoverQuality).observe(frame);
+  setupArtSourceLinks();
   frame.tabIndex = 0;
   frame.addEventListener("pointerdown", (event) => {
     if (event.button) {
@@ -471,6 +490,84 @@ function setupCoverEvents() {
     }
     event.preventDefault();
   });
+}
+
+/**
+ * Fills in search links to cover art sources from the card titles just before
+ * they are followed. The lower title is taken as the artist.
+ */
+function setupArtSourceLinks() {
+  const toText = (html) =>
+    new DOMParser().parseFromString(html, "text/html").body.textContent.trim();
+  const fill = (event) => {
+    const link = event.target.closest && event.target.closest("a[data-search]");
+    if (!link) {
+      return;
+    }
+    const artist = toText(getDataEntry("titleLower").valueOrLkgOrPreset);
+    const album = toText(getDataEntry("titleUpper").valueOrLkgOrPreset);
+    if (artist || album) {
+      link.href = link.dataset.search
+        .replace("{artist}", encodeURIComponent(artist))
+        .replace("{album}", encodeURIComponent(album));
+    }
+  };
+  qsAll(getRoot().element, ".art-sources").forEach((list) => {
+    ["pointerover", "focusin", "click", "auxclick", "contextmenu"].forEach(
+      (type) => list.addEventListener(type, fill)
+    );
+  });
+}
+
+/**
+ * Shows the cover's effective print resolution, given its frame size, the
+ * object-fit cover scaling, and the zoom.
+ */
+function updateCoverQuality() {
+  const element = document.getElementById("cover-quality");
+  const image = getOutputs().cover.element;
+  const frame = getOutputs().coverFrame.element;
+  const width = image.naturalWidth;
+  const height = image.naturalHeight;
+  if (!element || !width || !height || !frame.offsetWidth) {
+    return;
+  }
+  const style = getComputedStyle(frame);
+  const widthIn = parseFloat(style.width) / PX_PER_IN;
+  const heightIn = parseFloat(style.height) / PX_PER_IN;
+  const zoom =
+    Number(getDataEntry("coverZoom").valueOrLkgOrPreset) ||
+    getDataEntry("coverZoom").preset;
+  const dpi = Math.round(
+    1 / (Math.max(widthIn / width, heightIn / height) * zoom)
+  );
+  const quality = QUALITIES.find((band) => dpi >= band.dpi);
+  let text =
+    dpi +
+    " DPI: " +
+    quality.label +
+    ". Image " +
+    width +
+    " × " +
+    height +
+    " px on a " +
+    widthIn.toFixed(3).replace(/\.?0+$/, "") +
+    " × " +
+    heightIn.toFixed(3).replace(/\.?0+$/, "") +
+    " in area.";
+  if (dpi < DPI_TARGET) {
+    text +=
+      " For " +
+      DPI_TARGET +
+      " DPI at this zoom, use at least " +
+      Math.ceil(widthIn * DPI_TARGET * zoom) +
+      " × " +
+      Math.ceil(heightIn * DPI_TARGET * zoom) +
+      " px.";
+  }
+  element.textContent = text;
+  element.classList.remove(...QUALITIES.map((band) => band.name));
+  element.classList.add(quality.name);
 }
 
 /** Adds the given amount to the cover number entry by its key. */
