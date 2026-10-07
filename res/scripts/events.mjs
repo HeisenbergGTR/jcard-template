@@ -44,6 +44,13 @@ import {
   toCssFontList,
 } from "./fonts.mjs";
 import {
+  addRecent,
+  fetchArt,
+  fetchTracks,
+  getRecent,
+  searchAlbums,
+} from "./lookup.mjs";
+import {
   addToSheet,
   clearSheet,
   downloadPdf,
@@ -117,6 +124,7 @@ export function setupEvents() {
   setupFontEvents();
   setupFormEvents();
   setupPresetEvents();
+  setupSearchEvents();
   setupViewEvents();
   setupWindowEvents();
 }
@@ -371,6 +379,149 @@ function hasDropPayload(transfer) {
   return (
     transfer.types.includes("Files") || transfer.types.includes("text/uri-list")
   );
+}
+
+/** Adds listeners for the album art search. */
+function setupSearchEvents() {
+  const byId = (id) => document.getElementById(id);
+  const status = byId("search-status");
+  const detail = byId("search-detail");
+  let selected = null;
+  const toText = (html) =>
+    new DOMParser().parseFromString(html, "text/html").body.textContent.trim();
+  const describe = (result) =>
+    [result.year, result.format, result.country].filter(Boolean).join(" \u00b7 ");
+  // Builds a clickable tile for the given result.
+  const makeTile = (result) => {
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = "search-tile";
+    tile.title = result.artist + " \u2013 " + result.title;
+    const image = new Image();
+    image.alt = "";
+    image.loading = "lazy";
+    image.src = result.thumb;
+    // MusicBrainz releases without art 404; keep the tile, drop the image.
+    image.addEventListener("error", () => tile.classList.add("no-art"));
+    const caption = document.createElement("span");
+    caption.textContent = result.title;
+    const meta = document.createElement("small");
+    meta.textContent = result.artist + (describe(result) ? " \u00b7 " + describe(result) : "");
+    tile.append(image, caption, meta);
+    tile.addEventListener("click", () => select(result, tile));
+    return tile;
+  };
+  const select = (result, tile) => {
+    selected = result;
+    document
+      .querySelectorAll(".search-tile.selected")
+      .forEach((other) => other.classList.remove("selected"));
+    tile.classList.add("selected");
+    byId("search-preview").src = result.thumb;
+    byId("search-info").textContent =
+      result.artist + " \u2013 " + result.title + (describe(result) ? " (" + describe(result) + ")" : "");
+    detail.hidden = false;
+    status.textContent = "";
+  };
+  const showRecent = (recent) => {
+    byId("search-recent").hidden = !recent.length;
+    byId("search-recent-list").replaceChildren(...recent.map(makeTile));
+  };
+  const search = () => {
+    const artist =
+      byId("search-artist").value.trim() ||
+      toText(getDataEntry("titleLower").valueOrLkgOrPreset);
+    const album =
+      byId("search-album").value.trim() ||
+      toText(getDataEntry("titleUpper").valueOrLkgOrPreset);
+    if (!artist && !album) {
+      status.textContent = MESSAGES.lookupEmpty;
+      return;
+    }
+    status.textContent = MESSAGES.lookupSearching;
+    detail.hidden = true;
+    selected = null;
+    searchAlbums(artist, album, byId("search-source").value)
+      .then((results) => {
+        byId("search-results").replaceChildren(...results.map(makeTile));
+        status.textContent = results.length ? "" : MESSAGES.lookupNone;
+      })
+      .catch((error) => {
+        status.textContent = MESSAGES.lookupFailed + error.message;
+      });
+  };
+  byId("button-search").addEventListener("click", search);
+  ["search-artist", "search-album"].forEach((id) =>
+    byId(id).addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        search();
+      }
+    })
+  );
+  detail.querySelectorAll("[data-use]").forEach((button) =>
+    button.addEventListener("click", () => {
+      if (!selected) {
+        return;
+      }
+      const result = selected;
+      const target = button.dataset.use;
+      status.textContent = MESSAGES.lookupFetching;
+      fetchArt(result)
+        .then((blob) =>
+          target === "cover" ? applyCoverFile(blob) : applyArtFile(target, blob)
+        )
+        .then(() => {
+          status.textContent = "";
+          return addRecent(result).then(showRecent);
+        })
+        .catch((error) => {
+          status.textContent =
+            error.message === "No cover art"
+              ? MESSAGES.lookupNoArt
+              : MESSAGES.lookupFailed + error.message;
+        });
+    })
+  );
+  byId("button-search-titles").addEventListener("click", () => {
+    if (!selected) {
+      return;
+    }
+    [
+      ["titleUpper", selected.title],
+      ["titleLower", selected.artist],
+    ].forEach(([key, value]) => {
+      const entry = getDataEntry(key);
+      entry.value = value;
+      entry.element.dispatchEvent(EVENT_INPUT);
+    });
+  });
+  byId("button-search-tracks").addEventListener("click", () => {
+    if (!selected) {
+      return;
+    }
+    status.textContent = MESSAGES.lookupSearching;
+    fetchTracks(selected)
+      .then(({ sideA, sideB }) => {
+        if (!sideA.length && !sideB.length) {
+          status.textContent = MESSAGES.lookupTracksNone;
+          return;
+        }
+        [
+          ["sideAContents", sideA],
+          ["sideBContents", sideB],
+        ].forEach(([key, titles]) => {
+          const entry = getDataEntry(key);
+          entry.value = titles.join("\n");
+          entry.element.dispatchEvent(EVENT_INPUT);
+        });
+        status.textContent = MESSAGES.lookupTracksDone;
+      })
+      .catch((error) => {
+        status.textContent = MESSAGES.lookupFailed + error.message;
+      });
+  });
+  getRecent().then(showRecent);
 }
 
 /** Adds listeners for the Export section. */

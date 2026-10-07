@@ -10,12 +10,13 @@ import { MESSAGES } from "./constants.mjs";
 
 /** Database name and version. */
 const DB_NAME = "jcard-template";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 /** Object store names. */
 export const STORES = Object.freeze({
   autosave: "autosave",
   fonts: "fonts",
   presets: "presets",
+  recent: "recent",
 });
 
 /** Resolves with the value under the given key in the given store. */

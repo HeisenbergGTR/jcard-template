@@ -419,3 +419,78 @@ body.dropping::after {
 .sheet-list > li > button {
   margin-inline-start: auto;
 }
+
+#field-search-source .input.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+}
+
+#field-search-source .input.search-row > select {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+#field-search-source .input.search-row > button {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.search-results {
+  display: grid;
+  gap: 0.5em;
+  grid-template-columns: repeat(auto-fill, minmax(6.5em, 1fr));
+  margin-block: 0.5em;
+}
+
+.search-tile {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8em;
+  gap: 0.2em;
+  padding: 0.25em;
+  text-align: start;
+  width: auto;
+}
+
+.search-tile > img {
+  aspect-ratio: 1;
+  background-color: var(--colorAccentMid, gray);
+  object-fit: cover;
+  width: 100%;
+}
+
+.search-tile.no-art > img {
+  visibility: hidden;
+}
+
+.search-tile > span {
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-tile > small {
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-tile.selected {
+  outline: 0.2em solid Highlight;
+}
+
+.search-detail > img {
+  display: block;
+  margin: 0.5em auto;
+  max-height: 12em;
+  max-width: 100%;
+}
+
+.search-detail[hidden],
+.search-recent[hidden] {
+  display: none;
+}

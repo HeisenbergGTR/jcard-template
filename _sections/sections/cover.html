@@ -103,6 +103,52 @@ move freely, and Ctrl + arrows nudge in fine 0.1% steps.</i></p>
 an image anywhere on the page, or copy one and press Ctrl+V.</p>
 </section>
 <section>
+<details class="art-search" id="art-search">
+<summary><h4>Search Album Art</h4></summary>
+<p>Search online databases and use a result for the cover, back or wrap, or to
+fill in the titles and track list. Empty boxes use the card's titles.</p>
+<div class="field row" id="field-search-artist">
+  <label for="search-artist">Artist:</label>
+  <div class="input fluid">
+    <input id="search-artist" type="search" placeholder="Lower title" />
+  </div>
+</div>
+<div class="field row" id="field-search-album">
+  <label for="search-album">Album:</label>
+  <div class="input fluid">
+    <input id="search-album" type="search" placeholder="Upper title" />
+  </div>
+</div>
+<div class="field row" id="field-search-source">
+  <label for="search-source">Source:</label>
+  <div class="input fluid preset-row search-row">
+    <select id="search-source">
+      <option value="musicbrainz">MusicBrainz (cassettes first, original scans)</option>
+      <option value="itunes">Apple Music (clean 3000 px art)</option>
+    </select>
+    <button id="button-search" type="button">Search</button>
+  </div>
+</div>
+<p class="search-status" id="search-status" aria-live="polite"></p>
+<div class="search-results" id="search-results"></div>
+<div class="search-detail" id="search-detail" hidden>
+  <img id="search-preview" alt="" />
+  <p id="search-info"></p>
+  <div class="group">
+    <button type="button" data-use="cover">Use as cover</button>
+    <button type="button" data-use="back">Use on back</button>
+    <button type="button" data-use="wrap">Use as wrap</button>
+  </div>
+  <div class="group">
+    <button id="button-search-titles" type="button">Fill titles</button>
+    <button id="button-search-tracks" type="button">Fill track list</button>
+  </div>
+</div>
+<div class="search-recent" id="search-recent" hidden>
+  <h4>Recent Picks</h4>
+  <div class="search-results" id="search-recent-list"></div>
+</div>
+</details>
 <details>
 <summary><h4>Find Cover Art</h4></summary>
 <p>Links marked with a magnifier (🔍) search using the card's titles, with the

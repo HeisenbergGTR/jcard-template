@@ -11,6 +11,14 @@ export const MESSAGES = Object.freeze({
   exportLibrary: "Could not load the export library. Check your connection.",
   exportWorking: "Rendering…",
   fontBad: "Could not read that font file.",
+  lookupEmpty: "Type an artist or album, or fill in the card titles first.",
+  lookupFailed: "Search failed: ",
+  lookupFetching: "Fetching full-size art\u2026",
+  lookupNoArt: "That release has no cover art to download. Try another.",
+  lookupNone: "No results. Try fewer words or the other source.",
+  lookupSearching: "Searching\u2026",
+  lookupTracksDone: "Track list filled in.",
+  lookupTracksNone: "No track list found for that release.",
   presetDelete: "Delete the saved style preset ",
   presetName: "Name this style preset:",
   sheetFileName: "J-card sheet",
@@ -53,6 +61,15 @@ export const EXPORT = Object.freeze({
   marksIn: 0.25,
   pageMarginIn: 0.25,
   papers: Object.freeze({ a4: [8.27, 11.69], letter: [8.5, 11] }),
+});
+/** Album art lookup endpoints and limits. */
+export const LOOKUP = Object.freeze({
+  coverArt: "https://coverartarchive.org/",
+  itunes: "https://itunes.apple.com/",
+  itunesSize: 3000,
+  limit: 24,
+  musicBrainz: "https://musicbrainz.org/ws/2/",
+  recentMax: 12,
 });
 /** Libraries loaded on first use. */
 export const LIBRARIES = Object.freeze({
