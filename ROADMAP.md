@@ -132,6 +132,28 @@ fine adjustments, and an album-art reference lookup.
   hides the cover via the new **Show cover** switch, and a new cover image
   shows it again. The Side A/B labels can now be left blank.
 
+### Inside (reverse side) and safe-area guide
+- **Outside / Inside** switch above the card. Opening a form section for one
+  side also shows that side.
+- The inside is mirrored, as seen when the card is flipped over (inside front
+  on the left), and shares the card's shape (short back/spine). Inside front
+  text (blank lines kept, 1 or 2 columns), inside spine and inside back flap
+  text, separate card and text colours, and image slots for the inside front,
+  spine, back and wrap.
+- Click-to-edit, drop (Shift for wrap), paste, undo, auto-save, save/load,
+  Clear text and Clear images all cover the inside.
+- **Print → Sides**: Outside, Inside or Both. Each side is its own page; inside
+  pages run right to left, so they mirror the outside exactly (checked to
+  ~0.01 in on Letter and A4) for double-sided printing flipped on the long
+  edge. Print pages are padded so crop marks stay on their page and nothing
+  overflows the paper, which would make browsers shrink the printout.
+  Repeated print events are handled.
+- **Export → Side**: Side shown, Outside, Inside or Both (two PNGs, or a
+  two-page PDF). Sheets are single-sided.
+- **Safe area** toggle (remembered): a dashed guide 1/8 in inside the outer
+  edges and 1/16 in from each fold, on screen only (never printed or
+  exported). Text crossing it is outlined in orange and counted.
+
 ## Ideas for later
 - **Auto-fit text:** long albums (such as 26 tracks) overflow the front and
   back. A "shrink to fit" option, or an overflow warning, would help.
@@ -141,6 +163,9 @@ fine adjustments, and an album-art reference lookup.
   has. Today they use sliders only.
 - **DPI readout for the slot images.**
 - **Keep the export sheet in browser storage** so it survives reloads.
+- **Double-sided sheets:** mirror the inside cards for a duplex sheet PDF.
+- **Alignment test page:** a printable test to check a printer's duplex
+  offset, plus a nudge setting to correct it.
 - **Scroll-to-zoom on the cover:** consider requiring Ctrl.
 
 ## Housekeeping

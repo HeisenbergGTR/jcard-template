@@ -131,15 +131,15 @@ changing its text or images.</i></p>
 {{closeColumn-}}
 {{closeColumns-}}
 </section>
-<details>
+<details data-side="outside">
 <summary><h3>Cover</h3></summary>
 {% include_relative _sections/sections/cover.html-%}
 </details>
-<details open>
+<details data-side="outside" open>
 <summary><h3>Titles</h3></summary>
 {% include_relative _sections/sections/titles.html-%}
 </details>
-<details>
+<details data-side="outside">
 <summary><h3>Spine, Back &amp; Wrap Art</h3></summary>
 <section>
 <p>Drop an image onto the spine or back of the card to put it there, or hold
@@ -149,16 +149,131 @@ Shift while dropping to wrap it across the whole card. Text stays on top.</p>
 {%include art-slot.html id="art-wrap" title="Wrap (whole card)" note="One image across the back, spine and front, extending into the bleed. The front cover still sits on top unless you remove it."-%}
 </section>
 </details>
-<details>
+<details data-side="outside">
 <summary><h3>Footer</h3></summary>
 {% include_relative _sections/sections/footer.html-%}
 </details>
-<details>
+<details data-side="outside">
 <summary><h3>Notes</h3></summary>
 {% include_relative _sections/sections/notes.html-%}
 </details>
-<details>
+<details data-side="outside">
 <summary><h3>Contents</h3></summary>
 {% include_relative _sections/sections/contents.html-%}
+</details>
+<details data-side="inside" id="details-inside">
+<summary><h3>Inside (Reverse Side)</h3></summary>
+<section>
+<p>The inside of the card is shown mirrored, as you see it when you flip the
+card over: the inside of the front is on the left. Print both sides from the
+Print page to line them up. Click text or images on the card to edit them.</p>
+<div class="group">
+  <div class="field row small" id="field-inside-card-color">
+    <label for="input-inside-card-color">Card color:</label>
+    <div class="input shorter">
+      <input id="input-inside-card-color" type="color" />
+    </div>
+  </div>
+  <div class="field row small" id="field-inside-text-color">
+    <label for="input-inside-text-color">Text color:</label>
+    <div class="input shorter">
+      <input id="input-inside-text-color" type="color" />
+    </div>
+  </div>
+</div>
+<h4>Inside Front</h4>
+<div class="field row" id="field-inside-front-text">
+  <label for="input-inside-front-text">Text:</label>
+  <div class="input fluid">
+    <textarea class="follow-font-family" id="input-inside-front-text" rows="6" maxlength="65535" placeholder="Liner notes, lyrics, credits…"></textarea>
+  </div>
+</div>
+<div class="group">
+  <div class="field row small" id="field-inside-front-size">
+    <label for="input-inside-front-size">Size:</label>
+    <div class="input shorter">
+      <input id="input-inside-front-size" type="number" min="0" max="1023" step="0.1" />
+    </div>
+  </div>
+  <div class="field row small" id="field-inside-front-alignment">
+    <label for="input-inside-front-alignment">Alignment:</label>
+    <div class="input shorter">
+      <select id="input-inside-front-alignment">
+        <option value="left">Left</option>
+        <option value="center">Center</option>
+        <option value="right">Right</option>
+        <option value="justify">Justify</option>
+      </select>
+    </div>
+  </div>
+  <div class="field row small" id="field-inside-front-columns">
+    <label for="input-inside-front-columns">Columns:</label>
+    <div class="input shorter">
+      <select id="input-inside-front-columns">
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+    </div>
+  </div>
+</div>
+<h4>Inside Spine</h4>
+<div class="field row" id="field-inside-spine-text">
+  <label for="input-inside-spine-text">Text:</label>
+  <div class="input fluid">
+    <input class="follow-font-family" id="input-inside-spine-text" type="text" maxlength="1023" />
+  </div>
+</div>
+<div class="group">
+  <div class="field row small" id="field-inside-spine-size">
+    <label for="input-inside-spine-size">Size:</label>
+    <div class="input shorter">
+      <input id="input-inside-spine-size" type="number" min="0" max="1023" step="0.1" />
+    </div>
+  </div>
+  <div class="field row small" id="field-inside-spine-alignment">
+    <label for="input-inside-spine-alignment">Alignment:</label>
+    <div class="input shorter">
+      <select id="input-inside-spine-alignment">
+        <option value="left">Left</option>
+        <option value="center">Center</option>
+        <option value="right">Right</option>
+      </select>
+    </div>
+  </div>
+</div>
+<h4>Inside Back Flap</h4>
+<div class="field row" id="field-inside-back-text">
+  <label for="input-inside-back-text">Text:</label>
+  <div class="input fluid">
+    <textarea class="follow-font-family" id="input-inside-back-text" rows="4" maxlength="65535"></textarea>
+  </div>
+</div>
+<div class="group">
+  <div class="field row small" id="field-inside-back-size">
+    <label for="input-inside-back-size">Size:</label>
+    <div class="input shorter">
+      <input id="input-inside-back-size" type="number" min="0" max="1023" step="0.1" />
+    </div>
+  </div>
+  <div class="field row small" id="field-inside-back-alignment">
+    <label for="input-inside-back-alignment">Alignment:</label>
+    <div class="input shorter">
+      <select id="input-inside-back-alignment">
+        <option value="left">Left</option>
+        <option value="center">Center</option>
+        <option value="right">Right</option>
+        <option value="justify">Justify</option>
+      </select>
+    </div>
+  </div>
+</div>
+<h4>Inside Images</h4>
+<p>Drop an image onto an inside panel to put it there, or hold Shift while
+dropping to wrap it across the whole inside.</p>
+{%include art-slot.html id="art-inside-front" title="Inside front" note="Behind the front cover."-%}
+{%include art-slot.html id="art-inside-spine" title="Inside spine" note="Behind the spine."-%}
+{%include art-slot.html id="art-inside-back" title="Inside back flap" note="Behind the back flap."-%}
+{%include art-slot.html id="art-inside-wrap" title="Inside wrap (whole inside)" note="One image across the whole inside, into the bleed."-%}
+</section>
 </details>
 </form>

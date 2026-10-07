@@ -54,6 +54,60 @@ export function getArtKey(slot) {
   return "art" + slot.charAt(0).toUpperCase() + slot.substring(1);
 }
 
+/** Returns the kebab-case element id part of the given panel image slot. */
+export function getArtId(slot) {
+  return "art-" + slot.replace(/[A-Z]/g, (letter) => "-" + letter.toLowerCase());
+}
+
+/** Returns whether the given panel image slot is on the inside of the card. */
+export function isInsideSlot(slot) {
+  return slot.startsWith("inside");
+}
+
+/** Returns Remove buttons for each panel image slot. */
+function makeArtButtons() {
+  const out = {};
+  ART_SLOTS.forEach((slot) => {
+    out[getArtKey(slot) + "Remove"] = new FormButton({
+      id: getArtId(slot) + "-remove",
+    });
+  });
+  return out;
+}
+
+/** Returns outputs for each panel image slot. */
+function makeArtOutputs() {
+  const out = {};
+  ART_SLOTS.forEach((slot) => {
+    out[getArtKey(slot)] = new JCardOutput({
+      class: getArtId(slot),
+      inside: isInsideSlot(slot),
+    });
+  });
+  return out;
+}
+
+/** Returns data entries for the inside (reverse side) of the card. */
+function makeInsideEntries() {
+  const out = {};
+  const add = (key, id, preset) => {
+    out[key] = new DataFormEntry({ id: id, preset: preset });
+  };
+  add("insideCardColor", "inside-card-color", "#ffffff");
+  add("insideTextColor", "inside-text-color", "#000000");
+  add("insideFrontText", "inside-front-text", NUL_STRING);
+  add("insideFrontSize", "inside-front-size", 9);
+  add("insideFrontAlignment", "inside-front-alignment", "left");
+  add("insideFrontColumns", "inside-front-columns", "1");
+  add("insideBackText", "inside-back-text", NUL_STRING);
+  add("insideBackSize", "inside-back-size", 8);
+  add("insideBackAlignment", "inside-back-alignment", "left");
+  add("insideSpineText", "inside-spine-text", NUL_STRING);
+  add("insideSpineSize", "inside-spine-size", 9);
+  add("insideSpineAlignment", "inside-spine-alignment", "center");
+  return out;
+}
+
 /**
  * Returns data entries for each panel image slot, and the cover filters. Slot
  * images are saved with the card separately from their file inputs.
@@ -65,7 +119,7 @@ function makeArtEntries() {
   };
   ART_SLOTS.forEach((slot) => {
     const key = getArtKey(slot);
-    const id = "art-" + slot;
+    const id = getArtId(slot);
     add(key + "Image", id + "-image", NUL_STRING, {
       persistent: true,
       save: false,
@@ -102,9 +156,7 @@ export const application = Object.freeze({
   ),
   /** Form buttons. */
   buttons: Object.freeze({
-    artBackRemove: new FormButton({ id: "art-back-remove" }),
-    artSpineRemove: new FormButton({ id: "art-spine-remove" }),
-    artWrapRemove: new FormButton({ id: "art-wrap-remove" }),
+    ...makeArtButtons(),
     clearImages: new FormButton({ id: "clear-images" }),
     clearText: new FormButton({ id: "clear-text" }),
     coverAdjustReset: new FormButton({ id: "cover-adjust-reset" }),
@@ -143,6 +195,7 @@ export const application = Object.freeze({
     /** Data. */
     data: Object.freeze({
       ...makeArtEntries(),
+      ...makeInsideEntries(),
       ...makeTextAdjustEntries(),
       backContentsAlignment: new DataFormEntry({
         id: "back-contents-alignment",
@@ -352,6 +405,10 @@ export const application = Object.freeze({
         id: "print-opacity",
         preset: 1,
       }),
+      sides: new FormEntry({
+        id: "print-sides",
+        preset: "outside",
+      }),
       outline: new DataFormEntry({
         id: "print-outline",
         preset: false,
@@ -386,9 +443,17 @@ export const application = Object.freeze({
   }),
   /** J-card outputs. */
   outputs: Object.freeze({
-    artBack: new JCardOutput({ class: "art-back" }),
-    artSpine: new JCardOutput({ class: "art-spine" }),
-    artWrap: new JCardOutput({ class: "art-wrap" }),
+    ...makeArtOutputs(),
+    insideBackText: new JCardOutput({ class: "inside-back-text", inside: true }),
+    insideFrontText: new JCardOutput({
+      class: "inside-front-text",
+      inside: true,
+    }),
+    insideRoot: new JCardOutput({ inside: true }),
+    insideSpineText: new JCardOutput({
+      class: "inside-spine-text",
+      inside: true,
+    }),
     back: new JCardOutput({ class: "back" }),
     boundaries: new JCardOutput({ class: "boundaries" }),
     contents: new JCardOutput({ class: "contents" }),
@@ -424,7 +489,7 @@ export const application = Object.freeze({
   /** Current instance. */
   instance: Object.seal({
     /** Panel images as data URLs by slot, or null for none. */
-    art: { wrap: null, back: null, spine: null },
+    art: Object.fromEntries(ART_SLOTS.map((slot) => [slot, null])),
     /** Cover image as a data URL, or null for the default cover. */
     cover: null,
     file: null,

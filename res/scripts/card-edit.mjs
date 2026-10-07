@@ -24,10 +24,22 @@ const TEXT_TARGETS = Object.freeze([
   { selector: ".template-side-a-contents", fields: ["sideAContents"] },
   { selector: ".template-side-b-contents", fields: ["sideBContents"] },
   { selector: ".template-contents", fields: ["sideAContents", "sideBContents"] },
+  { selector: ".template-inside-front-text", fields: ["insideFrontText"] },
+  { selector: ".template-inside-back-text", fields: ["insideBackText"] },
+  { selector: ".template-inside-spine-text", fields: ["insideSpineText"] },
+]);
+/** Text selectors for empty inside panels, which open their editor on click. */
+const INSIDE_PANELS = Object.freeze([
+  { selector: ".template-inside-front-text", slot: "insideFront" },
+  { selector: ".template-inside-back-text", slot: "insideBack" },
+  { selector: ".template-inside-spine-text", slot: "insideSpine" },
 ]);
 /** Field labels and whether they span lines. */
 const FIELDS = Object.freeze({
   footer: { label: "Footer", multiline: true },
+  insideBackText: { label: "Inside back flap", multiline: true },
+  insideFrontText: { label: "Inside front", multiline: true },
+  insideSpineText: { label: "Inside spine" },
   noteLower: { label: "Lower note" },
   noteUpper: { label: "Upper note" },
   sideAContents: { label: "Side A tracks", multiline: true },
@@ -43,6 +55,10 @@ const IMAGES = Object.freeze({
   cover: { label: "Cover image", details: "field-cover-zoom", input: "input-cover-image" },
   spine: { label: "Spine image", details: "slot-art-spine", input: "input-art-spine-image" },
   wrap: { label: "Wrap image (whole card)", details: "slot-art-wrap", input: "input-art-wrap-image" },
+  insideBack: { label: "Inside back flap image", details: "slot-art-inside-back", input: "input-art-inside-back-image" },
+  insideFront: { label: "Inside front image", details: "slot-art-inside-front", input: "input-art-inside-front-image" },
+  insideSpine: { label: "Inside spine image", details: "slot-art-inside-spine", input: "input-art-inside-spine-image" },
+  insideWrap: { label: "Inside wrap image (whole inside)", details: "slot-art-inside-wrap", input: "input-art-inside-wrap-image" },
 });
 
 /** The popover element. */
@@ -54,16 +70,32 @@ let popover = null;
  */
 export function setupCardEditing(wasCoverDrag) {
   const template = getOutputs().root.element;
+  const inside = getOutputs().insideRoot.element;
   popover = document.createElement("div");
   popover.className = "card-popover";
   popover.hidden = true;
   popover.setAttribute("role", "dialog");
   document.body.append(popover);
   TEXT_TARGETS.forEach(({ selector }) =>
-    template.querySelectorAll(selector).forEach((element) =>
-      element.classList.add("editable-text")
+    [template, inside].forEach((root) =>
+      root.querySelectorAll(selector).forEach((element) =>
+        element.classList.add("editable-text")
+      )
     )
   );
+  inside.classList.add("editable-card");
+  inside.addEventListener("click", (event) => {
+    const text = TEXT_TARGETS.find(({ selector }) =>
+      Array.from(inside.querySelectorAll(selector)).some((element) =>
+        isOnText(element, event)
+      )
+    );
+    if (text) {
+      openText(text.fields, event);
+      return;
+    }
+    openInsidePanel(event);
+  });
   template.classList.add("editable-card");
   template.addEventListener("click", (event) => {
     const text = TEXT_TARGETS.find(({ selector }) =>
@@ -116,6 +148,27 @@ function isOnText(element, event) {
       event.clientY >= rect.top - slop &&
       event.clientY <= rect.bottom + slop
   );
+}
+
+/**
+ * Opens the menu for the inside panel under the given click, with a shortcut
+ * to write text there, or the inside wrap image away from the panels.
+ */
+function openInsidePanel(event) {
+  const outputs = getOutputs();
+  const panel = INSIDE_PANELS.find(({ slot }) =>
+    isOver(outputs["art" + slot.charAt(0).toUpperCase() + slot.slice(1)].element, event)
+  );
+  openImage(panel ? panel.slot : "insideWrap", event);
+  if (panel) {
+    const key = panel.slot + "Text";
+    const actions = popover.querySelector(".card-popover-actions");
+    actions.prepend(
+      makeButton("Write text", () => {
+        openText([key], event);
+      })
+    );
+  }
 }
 
 /** Returns the image slot under the given click: spine, back, or the wrap. */
@@ -217,7 +270,9 @@ function openImage(slot, event) {
         visible.value = false;
         visible.element.dispatchEvent(EVENT_CHANGE);
       } else {
-        document.getElementById("button-art-" + slot + "-remove").click();
+        document
+          .getElementById(info.input.replace(/^input-/, "button-").replace(/-image$/, "-remove"))
+          .click();
       }
     })
   );

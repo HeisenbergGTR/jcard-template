@@ -264,54 +264,69 @@ export function testPrintEntries() {
 }
 
 /**
- * In their parent: prepends a given number of blanks; and appends a given
- * number of the template root element. The parameters correspond to those in
- * the Print section.
+ * Lays out the printout: one page per printed side, each with a given number
+ * of blanks before a given number of copies. The parameters correspond to
+ * those in the Print section; `sides` is "outside", "inside" or "both". Inside
+ * pages run right to left, mirroring the outside page, so the two line up
+ * when printed double-sided and flipped on the long edge.
  */
 export function doPrint(
   start = 1,
   count = 1,
   margin = NUL_STRING,
   opacity = 1,
-  outline = false
+  outline = false,
+  sides = "outside"
 ) {
-  const element = getOutput("root").element;
-  switch (margin) {
-    case "variable":
-      element.classList.add("variable-width");
-    case "half":
-      element.classList.add("half-margin");
-  }
-  if (outline) {
-    element.classList.add("outline");
-  }
-  const blank = element.cloneNode(true);
-  element.style.opacity = opacity;
-  blank.style.opacity = 0;
-  const parent = element.parentElement;
-  while (start-- > 1) {
-    parent.prepend(blank.cloneNode(true));
-  }
-  while (count-- > 1) {
-    parent.append(element.cloneNode(true));
-  }
-}
-
-/**
- * Undoes `doPrint`; removes siblings of the template root element, and clears
- * its added properties.
- */
-export function undoPrint() {
-  const element = getOutput("root").element;
-  ["previousElementSibling", "nextElementSibling"].forEach((neighbor) => {
-    let sibling = element[neighbor];
-    while (sibling) {
-      sibling.remove();
-      sibling = element[neighbor];
+  // Browsers may announce printing more than once; start from a clean slate.
+  undoPrint();
+  const outside = getOutput("root").element;
+  const inside = getOutput("insideRoot").element;
+  const jcard = outside.parentElement;
+  const printed =
+    sides === "both" ? [outside, inside] : [sides === "inside" ? inside : outside];
+  jcard.classList.add("printing");
+  printed.forEach((element) => {
+    switch (margin) {
+      case "variable":
+        element.classList.add("variable-width");
+      case "half":
+        element.classList.add("half-margin");
+    }
+    if (outline) {
+      element.classList.add("outline");
+    }
+    const page = document.createElement("div");
+    page.className =
+      "print-page" + (element === inside ? " print-page-inside" : "");
+    jcard.append(page);
+    const blank = element.cloneNode(true);
+    element.style.opacity = opacity;
+    blank.style.opacity = 0;
+    page.append(element);
+    for (let blanks = start; blanks > 1; blanks--) {
+      page.prepend(blank.cloneNode(true));
+    }
+    for (let copies = count; copies > 1; copies--) {
+      page.append(element.cloneNode(true));
     }
   });
-  element.style.opacity = NUL_STRING;
-  element.classList.remove("half-margin", "outline", "variable-width");
+}
+
+/** Undoes `doPrint`, putting both sides back and clearing added properties. */
+export function undoPrint() {
+  const outside = getOutput("root").element;
+  const inside = getOutput("insideRoot").element;
+  const jcard = document.getElementById("jcard");
+  // Move the originals back, outside first, before removing the pages.
+  jcard.prepend(outside);
+  outside.after(inside);
+  jcard.querySelectorAll(":scope > .print-page").forEach((page) => page.remove());
+  jcard.classList.remove("printing");
+  [outside, inside].forEach((element) => {
+    element.style.opacity = NUL_STRING;
+    element.classList.remove("half-margin", "outline", "variable-width");
+  });
 }
 
 /** Returns the given application form entry by its key. */

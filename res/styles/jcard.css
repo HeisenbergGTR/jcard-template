@@ -659,3 +659,243 @@ form label > sup {
 #jcard .template-spine-title-group {
   font-family: var(--jCardTitleFontFamily, inherit);
 }
+
+/* Card sides. The inside is mirrored as a whole, with its content turned back
+   so it reads normally, like the Reverse option. */
+@media screen {
+  #jcard .template.side-hidden {
+    display: none;
+  }
+}
+
+#jcard .template.mirrored,
+#jcard .template.mirrored .template-foreground {
+  transform: rotateY(180deg);
+}
+
+#jcard .template-inside {
+  color: var(--jCardInsideTextColor, #000000);
+}
+
+#jcard .template-inside .template-boundaries {
+  background-color: var(--jCardInsideCardColor, #ffffff);
+}
+
+#jcard .template-inside .template-back > *,
+#jcard .template-inside .template-spine > *,
+#jcard .template-inside .template-front > * {
+  letter-spacing: normal;
+  line-height: 1.25;
+  translate: none;
+}
+
+#jcard .template-inside .template-back {
+  font-size: calc(
+    var(--jCardInsideBackSize, 8pt) / var(--jCardFontSizeFactorInvert)
+  );
+  justify-content: flex-start;
+  padding: calc(var(--spacerJCard) / 2) var(--spacerJCard);
+  text-align: var(--jCardInsideBackAlignment, left);
+}
+
+#jcard .template-inside .template-spine {
+  font-size: calc(
+    var(--jCardInsideSpineSize, 9pt) / var(--jCardFontSizeFactorInvert)
+  );
+}
+
+#jcard .template-inside-spine-text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 0 var(--spacerJCard);
+  text-align: var(--jCardInsideSpineAlignment, center);
+  white-space: nowrap;
+}
+
+#jcard .template-inside-front-text {
+  box-sizing: border-box;
+  column-count: var(--jCardInsideFrontColumns, 1);
+  column-gap: var(--spacerJCard);
+  column-fill: auto;
+  font-size: calc(
+    var(--jCardInsideFrontSize, 9pt) / var(--jCardFontSizeFactorInvert)
+  );
+  inset: 0;
+  overflow: hidden;
+  padding: var(--spacerJCard);
+  position: absolute;
+  text-align: var(--jCardInsideFrontAlignment, left);
+}
+
+#jcard .template-art-inside-back {
+  --artH: var(--lengthJCardHeight);
+  --artW: var(--lengthJCardBack);
+  left: calc(var(--lengthJCardBackDelta) + var(--lengthJCardSpineDelta));
+}
+
+#jcard .template-art-inside-spine {
+  --artH: var(--lengthJCardHeight);
+  --artW: var(--lengthJCardSpine);
+  left: calc(var(--lengthJCardBackTemplate) + var(--lengthJCardSpineDelta));
+}
+
+#jcard .template-art-inside-front {
+  --artH: var(--lengthJCardHeight);
+  --artW: var(--lengthJCardFront);
+  left: calc(var(--lengthJCardBackTemplate) + var(--lengthJCardSpineTemplate));
+}
+
+#jcard .template-art-inside-wrap {
+  --artH: calc(var(--lengthJCardHeight) + 2 * var(--lengthJCardBleed));
+  --artW: calc(
+    var(--lengthJCardBack) + var(--lengthJCardSpine) + var(--lengthJCardFront) +
+      2 * var(--lengthJCardBleed)
+  );
+  left: calc(
+    var(--lengthJCardBackDelta) + var(--lengthJCardSpineDelta) -
+      var(--lengthJCardBleed)
+  );
+  top: var(--lengthJCardBleedMirror);
+}
+
+#jcard .template-art-inside-wrap {
+  --artBrightness: var(--jCardArtInsideWrapBrightness);
+  --artContrast: var(--jCardArtInsideWrapContrast);
+  --artFit: var(--jCardArtInsideWrapFit);
+  --artOffsetX: var(--jCardArtInsideWrapOffsetX);
+  --artOffsetY: var(--jCardArtInsideWrapOffsetY);
+  --artOpacity: var(--jCardArtInsideWrapOpacity);
+  --artSaturate: var(--jCardArtInsideWrapSaturate);
+  --artTurn: var(--jCardArtInsideWrapTurn);
+  --artZoom: var(--jCardArtInsideWrapZoom);
+}
+
+#jcard .template-art-inside-back {
+  --artBrightness: var(--jCardArtInsideBackBrightness);
+  --artContrast: var(--jCardArtInsideBackContrast);
+  --artFit: var(--jCardArtInsideBackFit);
+  --artOffsetX: var(--jCardArtInsideBackOffsetX);
+  --artOffsetY: var(--jCardArtInsideBackOffsetY);
+  --artOpacity: var(--jCardArtInsideBackOpacity);
+  --artSaturate: var(--jCardArtInsideBackSaturate);
+  --artTurn: var(--jCardArtInsideBackTurn);
+  --artZoom: var(--jCardArtInsideBackZoom);
+}
+
+#jcard .template-art-inside-spine {
+  --artBrightness: var(--jCardArtInsideSpineBrightness);
+  --artContrast: var(--jCardArtInsideSpineContrast);
+  --artFit: var(--jCardArtInsideSpineFit);
+  --artOffsetX: var(--jCardArtInsideSpineOffsetX);
+  --artOffsetY: var(--jCardArtInsideSpineOffsetY);
+  --artOpacity: var(--jCardArtInsideSpineOpacity);
+  --artSaturate: var(--jCardArtInsideSpineSaturate);
+  --artTurn: var(--jCardArtInsideSpineTurn);
+  --artZoom: var(--jCardArtInsideSpineZoom);
+}
+
+#jcard .template-art-inside-front {
+  --artBrightness: var(--jCardArtInsideFrontBrightness);
+  --artContrast: var(--jCardArtInsideFrontContrast);
+  --artFit: var(--jCardArtInsideFrontFit);
+  --artOffsetX: var(--jCardArtInsideFrontOffsetX);
+  --artOffsetY: var(--jCardArtInsideFrontOffsetY);
+  --artOpacity: var(--jCardArtInsideFrontOpacity);
+  --artSaturate: var(--jCardArtInsideFrontSaturate);
+  --artTurn: var(--jCardArtInsideFrontTurn);
+  --artZoom: var(--jCardArtInsideFrontZoom);
+}
+
+/* Safe area guide: inset from the outer edges and from the folds. Screen only;
+   exports leave it out too. */
+#jcard .template-safe {
+  --safeEdge: 0.125in;
+  --safeFold: 0.0625in;
+  display: none;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+#jcard .template-safe > div {
+  height: calc(var(--lengthJCardHeight) - 2 * var(--safeEdge));
+  outline: 1px dashed rgb(230 0 120 / 0.75);
+  outline-offset: -1px;
+  position: absolute;
+  top: var(--safeEdge);
+}
+
+#jcard .template-safe-back {
+  left: calc(
+    var(--lengthJCardBackDelta) + var(--lengthJCardSpineDelta) + var(--safeEdge)
+  );
+  width: calc(var(--lengthJCardBack) - var(--safeEdge) - var(--safeFold));
+}
+
+#jcard .template-safe-spine {
+  left: calc(
+    var(--lengthJCardBackTemplate) + var(--lengthJCardSpineDelta) +
+      var(--safeFold)
+  );
+  width: calc(var(--lengthJCardSpine) - 2 * var(--safeFold));
+}
+
+#jcard .template-safe-front {
+  left: calc(
+    var(--lengthJCardBackTemplate) + var(--lengthJCardSpineTemplate) +
+      var(--safeFold)
+  );
+  width: calc(var(--lengthJCardFront) - var(--safeFold) - var(--safeEdge));
+}
+
+@media screen {
+  #jcard.show-safe .template-safe {
+    display: block;
+  }
+
+  #jcard.show-safe .outside-safe {
+    background-color: rgb(255 140 0 / 0.18);
+    outline: 1px solid #ff8c00;
+  }
+}
+
+@media print {
+  #jcard.printing {
+    display: block;
+  }
+
+  #jcard.printing > .template {
+    display: none;
+  }
+
+  /* Crop marks reach past a card's margin. The padding keeps them on the
+     card's own page, and keeps the mirrored inside page from overflowing the
+     paper (which makes browsers shrink the printout). Every page gets the
+     same padding, so the sides still line up. (The card's length variables
+     are not defined out here.) */
+  #jcard .print-page {
+    display: flex;
+    flex-flow: row wrap;
+    padding: 0.25in 0.125in 0;
+  }
+
+  #jcard .print-page + .print-page {
+    break-before: page;
+  }
+
+  /* Mirrors the inside page's layout so it lines up behind the outside. */
+  #jcard .print-page-inside {
+    direction: rtl;
+  }
+
+  #jcard .print-page-inside > .template {
+    direction: ltr;
+  }
+
+  #output:has(#jcard.printing .print-page + .print-page) {
+    height: auto;
+    overflow: visible;
+    position: static;
+  }
+}

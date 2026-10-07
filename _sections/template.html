@@ -1,6 +1,14 @@
 <div id="output">
+  <div class="card-toolbar">
+    <div class="side-toggle" role="group" aria-label="Card side">
+      <button type="button" data-side="outside" aria-pressed="true">Outside</button>
+      <button type="button" data-side="inside" aria-pressed="false">Inside</button>
+    </div>
+    <label class="safe-toggle"><input id="input-safe-guide" type="checkbox" checked /> Safe area</label>
+    <span class="safe-warning" id="safe-warning" aria-live="polite"></span>
+  </div>
   <div id="jcard">
-    <div class="template printable">
+    <div class="template printable template-outside">
       <div class="template-boundaries">
         <div class="template-bleed printable-bleed"></div>
         <div class="template-crop printable-crop"></div>
@@ -44,6 +52,45 @@
           <div class="template-contents template-foreground"></div>
           <div class="template-footer template-foreground"></div>
         </div>
+      </div>
+      <div class="template-safe screen-only">
+        <div class="template-safe-back"></div>
+        <div class="template-safe-spine"></div>
+        <div class="template-safe-front"></div>
+      </div>
+    </div>
+    <div class="template printable template-inside mirrored side-hidden">
+      <div class="template-boundaries">
+        <div class="template-bleed printable-bleed"></div>
+        <div class="template-crop printable-crop"></div>
+      </div>
+      <div class="template-fold-1 printable-fold"></div>
+      <div class="template-fold-2 printable-fold"></div>
+      <div class="template-art template-art-inside-wrap template-foreground">
+        <img class="template-art-image" src="" alt="" draggable="false" />
+      </div>
+      <div class="template-art template-art-inside-back template-foreground">
+        <img class="template-art-image" src="" alt="" draggable="false" />
+      </div>
+      <div class="template-art template-art-inside-spine template-foreground">
+        <img class="template-art-image" src="" alt="" draggable="false" />
+      </div>
+      <div class="template-art template-art-inside-front template-foreground">
+        <img class="template-art-image" src="" alt="" draggable="false" />
+      </div>
+      <div class="template-back">
+        <div class="template-inside-back-text template-foreground"></div>
+      </div>
+      <div class="template-spine">
+        <div class="template-inside-spine-text template-foreground"></div>
+      </div>
+      <div class="template-front">
+        <div class="template-inside-front-text template-foreground"></div>
+      </div>
+      <div class="template-safe screen-only">
+        <div class="template-safe-back"></div>
+        <div class="template-safe-spine"></div>
+        <div class="template-safe-front"></div>
       </div>
     </div>
   </div>

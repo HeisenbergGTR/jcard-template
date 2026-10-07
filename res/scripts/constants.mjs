@@ -6,6 +6,9 @@
 
 /** Messages. */
 export const MESSAGES = Object.freeze({
+  safeWarning: " cross the safe area",
+  safeWarningOne: "1 text item",
+  safeWarningMany: " text items",
   exportDone: "Saved ",
   exportFailed: "Export failed: ",
   exportLibrary: "Could not load the export library. Check your connection.",
@@ -127,12 +130,26 @@ export const CONTENT_KEYS = Object.freeze([
   "sideBLabel",
   "titleLower",
   "titleUpper",
+  "insideBackText",
+  "insideFrontText",
+  "insideSpineText",
 ]);
 
 /** Panel image slots besides the front cover. */
-export const ART_SLOTS = Object.freeze(["wrap", "back", "spine"]);
+export const ART_SLOTS = Object.freeze([
+  "wrap",
+  "back",
+  "spine",
+  "insideWrap",
+  "insideBack",
+  "insideSpine",
+  "insideFront",
+]);
 /** Image filter keys, applied to the cover and each slot. */
 export const FILTERS = Object.freeze(["Brightness", "Contrast", "Saturate"]);
+
+/** Safe area insets in inches: from the card's outer edges, and from folds. */
+export const SAFE_AREA = Object.freeze({ edgeIn: 0.125, foldIn: 0.0625 });
 
 /** Text blocks with fine adjustments, by key, with their default line height. */
 export const TEXT_BLOCKS = Object.freeze({

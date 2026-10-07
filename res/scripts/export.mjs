@@ -9,7 +9,8 @@
 import { getCardName } from "./application-functions.mjs";
 import { application } from "./application-model.mjs";
 import { EXPORT, LIBRARIES, MESSAGES } from "./constants.mjs";
-import { download, getOutput } from "./common/application-functions.mjs";
+import { download } from "./common/application-functions.mjs";
+import { getSide, getSideTemplate, setSide } from "./sides.mjs";
 
 /** CSS pixels per inch. */
 const PX_PER_IN = 96;
@@ -100,8 +101,27 @@ async function inlineUrls(css, base) {
  * card itself), "bleed" (plus its bleed) or "marks" (plus the crop marks).
  * Resolves with `{ canvas, widthIn, heightIn, dpi }`.
  */
-export async function renderCard(dpi = EXPORT.dpi, area = EXPORT.area) {
+export async function renderCard(
+  dpi = EXPORT.dpi,
+  area = EXPORT.area,
+  side = getSide()
+) {
   const library = await loadLibrary(LIBRARIES.htmlToImage, "htmlToImage");
+  const shown = getSide();
+  const jcard = document.getElementById("jcard");
+  const guide = jcard.classList.contains("show-safe");
+  setSide(side);
+  jcard.classList.remove("show-safe");
+  try {
+    return await renderShown(library, dpi, area, side);
+  } finally {
+    setSide(shown);
+    jcard.classList.toggle("show-safe", guide);
+  }
+}
+
+/** Renders the side shown; see `renderCard`. */
+async function renderShown(library, dpi, area, side) {
   if (document.activeElement && document.activeElement.blur) {
     // The focused cover shows its grid; keep it out of the export.
     document.activeElement.blur();
@@ -109,12 +129,13 @@ export async function renderCard(dpi = EXPORT.dpi, area = EXPORT.area) {
   await document.fonts.ready;
   const root = document.getElementById("jcard");
   const rootRect = root.getBoundingClientRect();
-  const rect = getAreaRect(area);
+  const rect = getAreaRect(area, getSideTemplate(side));
   const scale = dpi / PX_PER_IN;
   const full = await library.toCanvas(root, {
     // Empty image slots have nothing to draw.
     filter: (node) =>
-      !(node instanceof HTMLImageElement) || Boolean(node.getAttribute("src")),
+      !(node.classList && node.classList.contains("screen-only")) &&
+      (!(node instanceof HTMLImageElement) || Boolean(node.getAttribute("src"))),
     fontEmbedCSS: await getFontCss(),
     imagePlaceholder: EXPORT.blankImage,
     pixelRatio: scale,
@@ -141,15 +162,18 @@ export async function renderCard(dpi = EXPORT.dpi, area = EXPORT.area) {
   return {
     canvas: canvas,
     dpi: dpi,
+    side: side,
     heightIn: rect.height / PX_PER_IN,
     widthIn: rect.width / PX_PER_IN,
   };
 }
 
-/** Returns the on-screen rectangle of the given export area. */
-function getAreaRect(area) {
-  const card = getOutput("boundaries").element.getBoundingClientRect();
-  const template = getOutput("root").element.getBoundingClientRect();
+/** Returns the on-screen rectangle of the given export area of a template. */
+function getAreaRect(area, root) {
+  const card = root
+    .querySelector(".template-boundaries")
+    .getBoundingClientRect();
+  const template = root.getBoundingClientRect();
   const grow = (rect, inches) => {
     const by = inches * PX_PER_IN;
     return new DOMRect(
@@ -170,39 +194,44 @@ function getAreaRect(area) {
 }
 
 /** Downloads the given render as a PNG that records its DPI. */
-export async function downloadPng(render) {
+export async function downloadPng(render, suffix = "") {
   const blob = await new Promise((resolve) =>
     render.canvas.toBlob(resolve, "image/png")
   );
   const bytes = withPngDpi(new Uint8Array(await blob.arrayBuffer()), render.dpi);
   const url = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
-  download(getCardName() + ".png", url);
+  download(getCardName() + (suffix || "") + ".png", url);
 }
 
 /**
  * Downloads the given render as a PDF, either at card size or centred on the
  * given paper ("letter" or "a4").
  */
-export async function downloadPdf(render, paper = "card") {
+export async function downloadPdf(renders, paper = "card") {
   const { jsPDF } = await loadLibrary(LIBRARIES.jsPdf, "jspdf");
+  renders = [].concat(renders);
+  const first = renders[0];
   const size =
-    paper === "card" ? [render.widthIn, render.heightIn] : EXPORT.papers[paper];
-  const pdf = new jsPDF({
-    format: size,
-    orientation: size[0] > size[1] ? "landscape" : "portrait",
-    unit: "in",
-  });
+    paper === "card" ? [first.widthIn, first.heightIn] : EXPORT.papers[paper];
+  const orientation = size[0] > size[1] ? "landscape" : "portrait";
+  const pdf = new jsPDF({ format: size, orientation: orientation, unit: "in" });
   const page = getPageSize(pdf);
-  pdf.addImage(
-    render.canvas,
-    "PNG",
-    (page[0] - render.widthIn) / 2,
-    (page[1] - render.heightIn) / 2,
-    render.widthIn,
-    render.heightIn,
-    undefined,
-    "FAST"
-  );
+  renders.forEach((render, index) => {
+    if (index) {
+      pdf.addPage(size, orientation);
+    }
+    // Centred, so the inside page mirrors the outside for double-sided prints.
+    pdf.addImage(
+      render.canvas,
+      "PNG",
+      (page[0] - render.widthIn) / 2,
+      (page[1] - render.heightIn) / 2,
+      render.widthIn,
+      render.heightIn,
+      undefined,
+      "FAST"
+    );
+  });
   pdf.save(getCardName() + ".pdf");
 }
 
@@ -211,7 +240,7 @@ export function addToSheet(render) {
   sheet.push({
     dataUrl: render.canvas.toDataURL("image/png"),
     heightIn: render.heightIn,
-    name: getCardName(),
+    name: getCardName() + (render.side === "inside" ? " (inside)" : ""),
     widthIn: render.widthIn,
   });
   return getSheet();

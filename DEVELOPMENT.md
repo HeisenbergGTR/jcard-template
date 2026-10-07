@@ -48,6 +48,12 @@ bundle install
 - `res/scripts/application-functions.mjs`: load/save/restore, and the cover
   and slot images (`setCover`, `setArt`).
 - `res/scripts/history.mjs`: undo/redo snapshots and auto-save.
+- `res/scripts/sides.mjs`: the Outside/Inside switch. The inside is a second
+  `.template` (`.template-inside.mirrored`) with the same geometry, mirrored
+  with `rotateY` and its content turned back. `roots.mjs` exposes both, and
+  `JCardOutput({ inside: true })` targets the inside.
+- `res/scripts/safe-area.mjs`: the safe-area guide and crossing check.
+- `res/scripts/card-edit.mjs`: click-to-edit popovers on the card.
 - `res/scripts/storage.mjs`: IndexedDB stores (autosave, fonts, presets,
   recent).
 - `res/scripts/fonts.mjs`: custom fonts, Google Fonts and CSS font lists.

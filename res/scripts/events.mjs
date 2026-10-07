@@ -5,6 +5,8 @@
  */
 
 import { setupCardEditing } from "./card-edit.mjs";
+import { setupSafeArea } from "./safe-area.mjs";
+import { getSide, setupSides } from "./sides.mjs";
 import {
   ART_SLOTS,
   CONTENT_KEYS,
@@ -116,6 +118,7 @@ const OPTIONS_COALESCE_PT = Object.freeze({ coalesce: true, suffix: "pt" });
 
 /** Adds event listeners and their handlers to elements. */
 export function setupEvents() {
+  setupSides();
   setupApplicationEvents();
   setupArtEvents();
   setupButtonEvents();
@@ -128,6 +131,8 @@ export function setupEvents() {
   setupPresetEvents();
   setupSearchEvents();
   setupViewEvents();
+  setupInsideEvents();
+  setupSafeArea();
   setupWindowEvents();
 }
 
@@ -377,7 +382,9 @@ function setupFileEvents() {
       return;
     }
     event.preventDefault();
-    applyCoverFile(image);
+    getSide() === "inside"
+      ? applyArtFile("insideFront", image)
+      : applyCoverFile(image);
   });
 }
 
@@ -542,13 +549,30 @@ function setupExportEvents() {
   const buttons = ["export-png", "export-pdf", "sheet-add"].map((id) =>
     byId("button-" + id)
   );
-  const render = () =>
-    renderCard(
-      Number(byId("input-export-dpi").value),
-      byId("input-export-area").value
-    );
-  const describe = (result) =>
-    result.canvas.width +
+  // Resolves with one render per chosen side.
+  const render = async () => {
+    const choice = byId("input-export-side").value;
+    const sides =
+      choice === "both"
+        ? ["outside", "inside"]
+        : [choice === "shown" ? getSide() : choice];
+    const renders = [];
+    for (const side of sides) {
+      renders.push(
+        await renderCard(
+          Number(byId("input-export-dpi").value),
+          byId("input-export-area").value,
+          side
+        )
+      );
+    }
+    return renders;
+  };
+  const describe = (results) => {
+    const result = results[0];
+    return (
+      (results.length > 1 ? results.length + " sides, " : "") +
+      result.canvas.width +
     " × " +
     result.canvas.height +
     " px, " +
@@ -557,7 +581,9 @@ function setupExportEvents() {
     result.heightIn.toFixed(2) +
     " in at " +
     result.dpi +
-    " DPI";
+    " DPI"
+    );
+  };
   // Runs the given export step, showing progress and failures.
   const run = (step) => {
     buttons.forEach((button) => (button.disabled = true));
@@ -591,24 +617,33 @@ function setupExportEvents() {
     byId("button-sheet-clear").disabled = !cards.length;
   };
   buttons[0].addEventListener("click", () =>
-    run((result) =>
-      downloadPng(result).then(() => {
+    run((results) =>
+      Promise.all(
+        results.map((result) =>
+          downloadPng(
+            result,
+            results.length > 1 ? " (" + result.side + ")" : ""
+          )
+        )
+      ).then(() => {
+        const result = results;
         status.textContent =
           MESSAGES.exportDone + "PNG: " + describe(result) + ".";
       })
     )
   );
   buttons[1].addEventListener("click", () =>
-    run((result) =>
-      downloadPdf(result, byId("input-export-paper").value).then(() => {
+    run((results) =>
+      downloadPdf(results, byId("input-export-paper").value).then(() => {
+        const result = results;
         status.textContent =
           MESSAGES.exportDone + "PDF: " + describe(result) + ".";
       })
     )
   );
   buttons[2].addEventListener("click", () =>
-    run((result) => {
-      showSheet(addToSheet(result));
+    run((results) => {
+      results.forEach((result) => showSheet(addToSheet(result)));
       status.textContent = "";
     })
   );
@@ -726,6 +761,44 @@ function setupPresetEvents() {
   fill();
 }
 
+/** Adds listeners for the inside of the card. */
+function setupInsideEvents() {
+  const i = getDataEntries();
+  const o = getOutputs();
+  [
+    [i.insideFrontText, o.insideFrontText],
+    [i.insideBackText, o.insideBackText],
+    [i.insideSpineText, o.insideSpineText],
+  ].forEach(([entry, output]) =>
+    entry.element.addEventListener(
+      "input",
+      makeHandler(() => {
+        doBeforeEdit(entry);
+        // Keep blank lines, which separate verses and paragraphs.
+        output.element.innerHTML = String(entry.valueOrLkgOrPreset)
+          .replace(/\r\n?/g, "\n")
+          .split("\n")
+          .join("<br />");
+        return doAfterEdit(entry);
+      }, OPTIONS_COALESCE)
+    )
+  );
+  [
+    "insideBackAlignment",
+    "insideCardColor",
+    "insideFrontAlignment",
+    "insideFrontColumns",
+    "insideSpineAlignment",
+    "insideTextColor",
+  ].forEach((key) => addStyleVariableListener(i, key, OPTIONS_COALESCE));
+  ["insideBackSize", "insideFrontSize", "insideSpineSize"].forEach((key) =>
+    addStyleVariableListener(i, key, OPTIONS_COALESCE_PT)
+  );
+  // Both sides share the card's shape.
+  addClassListener(i.shortBack, o.insideRoot, "short-back", OPTIONS_COALESCE);
+  addClassListener(i.shortSpine, o.insideRoot, "short-spine", OPTIONS_COALESCE);
+}
+
 /** Adds listeners for the panel image slots. */
 function setupArtEvents() {
   const i = getDataEntries();
@@ -772,8 +845,9 @@ function applyArtFile(slot, file) {
  * Shift is held, the spine or back when dropped on them, or null for the cover.
  */
 function getDropSlot(event) {
+  const inside = getSide() === "inside";
   if (event.shiftKey) {
-    return "wrap";
+    return inside ? "insideWrap" : "wrap";
   }
   const outputs = getOutputs();
   const isOver = (element) => {
@@ -786,6 +860,14 @@ function getDropSlot(event) {
       event.clientY <= rect.bottom
     );
   };
+  if (inside) {
+    // The front is checked last; the inside has no cover to fall back to.
+    return (
+      ["insideSpine", "insideBack", "insideFront"].find((slot) =>
+        isOver(outputs[getArtKey(slot)].element)
+      ) || "insideFront"
+    );
+  }
   return ["spine", "back"].find((slot) =>
     isOver(outputs[getArtKey(slot)].element)
   ) || null;
@@ -896,7 +978,8 @@ function setupWindowEvents() {
       getPrintEntry("count").valueOrLkgOrPreset,
       getPrintEntry("margin").valueOrLkgOrPreset,
       getPrintEntry("opacity").valueOrLkgOrPreset,
-      getPrintEntry("outline").valueOrLkgOrPreset
+      getPrintEntry("outline").valueOrLkgOrPreset,
+      getPrintEntry("sides").valueOrLkgOrPreset
     );
   });
   window.addEventListener("afterprint", undoPrint);

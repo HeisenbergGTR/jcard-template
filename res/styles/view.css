@@ -557,3 +557,43 @@ body.dropping::after {
     display: none;
   }
 }
+
+.card-toolbar {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.5em 1em;
+  justify-content: center;
+  margin-block-end: 0.5em;
+}
+
+.side-toggle {
+  display: flex;
+}
+
+.side-toggle > button {
+  width: auto;
+}
+
+.side-toggle > button[aria-pressed="true"] {
+  font-weight: bold;
+  outline: 0.15em solid Highlight;
+  outline-offset: -0.15em;
+}
+
+.safe-toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.3em;
+}
+
+.safe-warning {
+  color: #ff8c00;
+}
+
+@media print {
+  .card-toolbar {
+    display: none;
+  }
+}

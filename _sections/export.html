@@ -23,6 +23,17 @@ PNGs record their DPI, so they print at true size from other programs.</p>
           </select>
         </div>
       </div>
+      <div class="field column small" id="field-export-side">
+        <label for="input-export-side">Side:</label>
+        <div class="input short">
+          <select id="input-export-side">
+            <option value="shown">Side shown</option>
+            <option value="outside">Outside</option>
+            <option value="inside">Inside</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+      </div>
       <div class="field column small" id="field-export-paper">
         <label for="input-export-paper">PDF paper:</label>
         <div class="input short">
@@ -43,7 +54,8 @@ PNGs record their DPI, so they print at true size from other programs.</p>
   <section>
     <h3>Sheet</h3>
     <p>Collect different cards here, then save them together as one PDF,
-several to a page at true size. Cards use the resolution and area above.</p>
+several to a page at true size. Cards use the resolution, area and side
+above. Sheets are single-sided.</p>
     <div class="group">
       <button id="button-sheet-add" type="button">Add this card to sheet</button>
       <button id="button-sheet-pdf" type="button" disabled>Download sheet PDF</button>
