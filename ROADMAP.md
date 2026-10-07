@@ -119,6 +119,19 @@ fine adjustments, and an album-art reference lookup.
 - Art is fetched live, never re-hosted. Deezer was tested and blocks browser
   requests (no CORS).
 
+### Edit on the card, Clear text / Clear images
+- Click any text on the card for a small editor right there (front contents
+  edits Side A and B together); it updates live and goes through undo. Clicks
+  are matched against the actual letters, so overlapping blocks on the spine
+  work.
+- Click the cover, or a blank part of the spine, back or front, for that
+  image's actions: Choose image…, Search art, Adjust…, Remove.
+- A press on the cover only becomes a drag after 4 px of movement, so clicks
+  never nudge or snap it.
+- **Clear text** and **Clear images** sit beside Undo/Redo. Clearing images
+  hides the cover via the new **Show cover** switch, and a new cover image
+  shows it again. The Side A/B labels can now be left blank.
+
 ## Ideas for later
 - **Auto-fit text:** long albums (such as 26 tracks) overflow the front and
   back. A "shrink to fit" option, or an overflow warning, would help.

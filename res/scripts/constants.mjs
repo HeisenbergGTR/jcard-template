@@ -116,6 +116,19 @@ export const GOOGLE_FONTS = Object.freeze([
   "VT323",
 ]);
 
+/** Settings that are the card's text content rather than its style. */
+export const CONTENT_KEYS = Object.freeze([
+  "footer",
+  "noteLower",
+  "noteUpper",
+  "sideAContents",
+  "sideALabel",
+  "sideBContents",
+  "sideBLabel",
+  "titleLower",
+  "titleUpper",
+]);
+
 /** Panel image slots besides the front cover. */
 export const ART_SLOTS = Object.freeze(["wrap", "back", "spine"]);
 /** Image filter keys, applied to the cover and each slot. */

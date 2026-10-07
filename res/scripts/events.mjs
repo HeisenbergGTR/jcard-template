@@ -4,8 +4,10 @@
  * A single call to `setupEvents` makes the magic happen.
  */
 
+import { setupCardEditing } from "./card-edit.mjs";
 import {
   ART_SLOTS,
+  CONTENT_KEYS,
   FILE_NAME,
   FILTERS,
   MESSAGES,
@@ -160,6 +162,8 @@ function setupButtonEvents() {
   addActionListener(buttons.load, (event) =>
     loadFile(getInputSafeValue(event.target))
   );
+  addActionListener(buttons.clearImages, clearImages);
+  addActionListener(buttons.clearText, clearText);
   addActionListener(buttons.coverAdjustReset, resetCoverAdjustments);
   addActionListener(buttons.coverReset, () => {
     resetCover();
@@ -219,6 +223,12 @@ function setupEntryEvents() {
   addClassListener(i.coverFlipH, o.coverFrame, "flip-h", OPTIONS_COALESCE);
   addClassListener(i.coverFlipV, o.coverFrame, "flip-v", OPTIONS_COALESCE);
   addClassListener(i.fillCover, o.coverFrame, "fill", OPTIONS_COALESCE);
+  addClassListener(
+    i.coverVisible,
+    o.coverFrame,
+    "hidden",
+    OPTIONS_COALESCE_INVERT
+  );
   addClassListener(i.forceCaps, o.root, "force-caps", OPTIONS_COALESCE);
   addClassListener(
     i.frontContentsVisible,
@@ -781,12 +791,41 @@ function getDropSlot(event) {
   ) || null;
 }
 
+/** Empties every text field on the card. */
+function clearText() {
+  CONTENT_KEYS.forEach((key) => {
+    const entry = getDataEntry(key);
+    entry.value = "";
+    entry.element.dispatchEvent(EVENT_INPUT);
+  });
+}
+
+/** Hides the cover and removes every panel image. */
+function clearImages() {
+  resetCover();
+  ART_SLOTS.forEach((slot) => setArt(slot, null));
+  const visible = getDataEntry("coverVisible");
+  visible.value = false;
+  visible.element.dispatchEvent(EVENT_CHANGE);
+  doAfterModify({ save: true });
+}
+
+/** Shows the cover if it was hidden or cleared. */
+function showCover() {
+  const visible = getDataEntry("coverVisible");
+  if (!visible.valueOrLkgOrPreset) {
+    visible.value = true;
+    visible.element.dispatchEvent(EVENT_CHANGE);
+  }
+}
+
 /** Sets the cover image to the given image file and marks the card modified. */
 function applyCoverFile(file) {
   return readCover(file).then(
     (src) => {
       setCover(src);
       resetCoverAdjustments();
+      showCover();
       doAfterModify({ save: true });
     },
     () => {}
@@ -886,6 +925,8 @@ function setupWindowEvents() {
 
 /** CSS pixels per inch. */
 const PX_PER_IN = 96;
+/** Pointer travel in pixels before a press on the cover becomes a drag. */
+const DRAG_THRESHOLD = 4;
 /** Print quality bands by minimum DPI, best first. */
 const QUALITIES = Object.freeze([
   { dpi: 300, name: "sharp", label: "Sharp ✓" },
@@ -900,6 +941,8 @@ const DPI_TARGET = 300;
 function setupCoverEvents() {
   const frame = getOutputs().coverFrame.element;
   let drag = null;
+  let dragged = false;
+  setupCardEditing(() => dragged);
   getOutputs().cover.element.addEventListener("load", updateCoverQuality);
   getDataEntry("coverZoom").element.addEventListener(
     "input",
@@ -916,6 +959,7 @@ function setupCoverEvents() {
     frame.focus();
     frame.setPointerCapture(event.pointerId);
     frame.classList.add("dragging");
+    dragged = false;
     drag = {
       x: event.clientX,
       y: event.clientY,
@@ -927,6 +971,15 @@ function setupCoverEvents() {
     if (!drag) {
       return;
     }
+    // Small wobbles during a click are not a drag.
+    if (
+      !dragged &&
+      Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <
+        DRAG_THRESHOLD
+    ) {
+      return;
+    }
+    dragged = true;
     const rect = frame.getBoundingClientRect();
     const free = event.ctrlKey;
     frame.classList.toggle("free", free);
@@ -1038,7 +1091,11 @@ function updateCoverQuality() {
   const frame = getOutputs().coverFrame.element;
   const width = image.naturalWidth;
   const height = image.naturalHeight;
-  if (!element || !width || !height || !frame.offsetWidth) {
+  if (!element) {
+    return;
+  }
+  if (!width || !height || !frame.offsetWidth) {
+    element.textContent = "";
     return;
   }
   const style = getComputedStyle(frame);

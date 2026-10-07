@@ -12,22 +12,11 @@ import {
   getDataSaveEntries,
   updateData,
 } from "./application-functions.mjs";
+import { CONTENT_KEYS } from "./constants.mjs";
 import { getUsedFonts, registerFonts } from "./fonts.mjs";
 import * as storage from "./storage.mjs";
 import { STORES } from "./storage.mjs";
 
-/** Settings that are the card's content rather than its style. */
-const CONTENT_KEYS = Object.freeze([
-  "footer",
-  "noteLower",
-  "noteUpper",
-  "sideAContents",
-  "sideALabel",
-  "sideBContents",
-  "sideBLabel",
-  "titleLower",
-  "titleUpper",
-]);
 /** Settings that place a particular image, which do not carry over. */
 const PLACEMENT = /^(cover|art\w+?)(OffsetX|OffsetY|Zoom|Rotate|Turn|FlipH|FlipV)$/;
 

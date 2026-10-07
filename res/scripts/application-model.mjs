@@ -105,6 +105,8 @@ export const application = Object.freeze({
     artBackRemove: new FormButton({ id: "art-back-remove" }),
     artSpineRemove: new FormButton({ id: "art-spine-remove" }),
     artWrapRemove: new FormButton({ id: "art-wrap-remove" }),
+    clearImages: new FormButton({ id: "clear-images" }),
+    clearText: new FormButton({ id: "clear-text" }),
     coverAdjustReset: new FormButton({ id: "cover-adjust-reset" }),
     coverReset: new FormButton({ id: "cover-reset" }),
     coverRotateLeft: new FormButton({ id: "cover-rotate-left" }),
@@ -175,6 +177,10 @@ export const application = Object.freeze({
       coverHeightFactor: new DataFormEntry({
         id: "cover-height-factor",
         preset: 1,
+      }),
+      coverVisible: new DataFormEntry({
+        id: "cover-visible",
+        preset: true,
       }),
       coverFlipH: new DataFormEntry({
         id: "cover-flip-h",
@@ -286,7 +292,7 @@ export const application = Object.freeze({
       }),
       sideALabel: new DataFormEntry({
         id: "side-a-label",
-        preset: "Side A",
+        preset: NUL_STRING,
       }),
       sideBContents: new DataFormEntry({
         id: "side-b-contents",
@@ -294,7 +300,7 @@ export const application = Object.freeze({
       }),
       sideBLabel: new DataFormEntry({
         id: "side-b-label",
-        preset: "Side B",
+        preset: NUL_STRING,
       }),
       spineTitleAlignment: new DataFormEntry({
         id: "spine-title-alignment",

@@ -29,6 +29,8 @@ export function setFrontContents(output, aContents, bContents, separator) {
       .map((entry) => {
         return entry.valueOrLkgOrPreset;
       })
+      // An empty side would leave a stray separator.
+      .filter(Boolean)
       .join("\n"),
     separator.valueOrLkgOrPreset
   );

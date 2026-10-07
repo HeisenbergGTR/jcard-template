@@ -494,3 +494,66 @@ body.dropping::after {
 .search-recent[hidden] {
   display: none;
 }
+
+.card-popover {
+  background-color: var(--colorAccentMin, Canvas);
+  border: 1px solid var(--colorAccentHigh, gray);
+  box-shadow: 0 0.5em 1.5em rgb(0 0 0 / 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  max-width: min(24em, calc(100vw - 16px));
+  padding: 0.75em;
+  position: fixed;
+  width: 22em;
+  z-index: 1001;
+}
+
+.card-popover[hidden] {
+  display: none;
+}
+
+.card-popover > label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.card-popover input,
+.card-popover textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.card-popover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  justify-content: flex-end;
+}
+
+.card-popover-actions > button {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+@media screen {
+  #jcard .editable-card {
+    cursor: pointer;
+  }
+
+  #jcard .editable-card .editable-text {
+    cursor: text;
+  }
+
+  #jcard .editable-card .editable-text:hover {
+    outline: 1px dashed Highlight;
+    outline-offset: 1px;
+  }
+}
+
+@media print {
+  .card-popover {
+    display: none;
+  }
+}
