@@ -34,18 +34,34 @@ bundle install
 ```
 
 ## Code map
-- `_sections/`: HTML partials. `template.html` is the card itself; `sections/*.html`
-  are the form panels (cover, titles, footer, notes, contents).
+- `_sections/`: HTML partials. `template.html` is the card itself; `form.html`,
+  `export.html` and `sections/*.html` are the panels.
+- `_includes/`: reusable partials. `text-adjust.html` holds a text block's fine
+  adjustments, `art-slot.html` an image slot, and `art-sliders.html` the
+  zoom/move/opacity/filter sliders.
 - `res/scripts/application-model.mjs`: every form entry, button and output.
-  A new saved setting goes in `entries.data` as a `DataFormEntry`.
-- `res/scripts/events.mjs`: wires entries to outputs, plus file drop/paste and
-  the cover drag/wheel/keyboard controls.
-- `res/scripts/application-functions.mjs`: load/save, cover read/set/reset.
+  A new saved setting goes in `entries.data` as a `DataFormEntry`. Text-block
+  and image-slot entries are generated from `TEXT_BLOCKS` / `ART_SLOTS` in
+  `constants.mjs`.
+- `res/scripts/events.mjs`: wires entries to outputs, file drop/paste, the
+  cover drag/wheel/keys and snapping, fonts, presets, export and search UI.
+- `res/scripts/application-functions.mjs`: load/save/restore, and the cover
+  and slot images (`setCover`, `setArt`).
+- `res/scripts/history.mjs`: undo/redo snapshots and auto-save.
+- `res/scripts/storage.mjs`: IndexedDB stores (autosave, fonts, presets,
+  recent).
+- `res/scripts/fonts.mjs`: custom fonts, Google Fonts and CSS font lists.
+- `res/scripts/presets.mjs`: style presets.
+- `res/scripts/export.mjs`: PNG/PDF rendering and sheets.
+- `res/scripts/lookup.mjs`: MusicBrainz, Cover Art Archive and Apple Music
+  search.
 - `res/styles/jcard.css`: card geometry, in inches. Settings reach it as CSS
   variables named `--jCard<Key>`, which are set on `<article>`.
-- `res/styles/view.css`: the app's layout, the drop overlay and slider rows.
+- `res/styles/view.css`: the app's layout, the drop overlay, slider rows,
+  presets, sheet and search tiles.
 
 ## Testing
-No test suite. Changes have been checked by driving headless Edge over the
-DevTools protocol: drop, paste, save/load round trips, plus real mouse, wheel
-and keyboard input, with screenshots.
+No test suite in the repo. Each feature was checked by driving headless Edge
+over the DevTools protocol: drop, paste and save/load round trips; real mouse,
+wheel and keyboard input; downloaded export files (size, DPI, PDF pages);
+live album searches; and screenshots.

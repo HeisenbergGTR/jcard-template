@@ -75,44 +75,64 @@ fine adjustments, and an album-art reference lookup.
   jumps 5 lines, and Ctrl+arrow nudges 0.1%.
 - Ctrl is used rather than Alt, because Alt+← means "go back" in browsers.
 
-## Remaining ideas
+### 5. Spine, back and wrap images (committed `6ac879d`)
+- Three image slots besides the cover: **Spine**, **Back** and **Wrap** (one
+  image across the whole card, into the bleed). Each has Fit (fill/whole),
+  Turn 0/90/180/270, Zoom, Move X/Y, Opacity, Brightness, Contrast and
+  Saturation. The cover gets the same three filters.
+- Drop an image on the spine or back to fill that slot; Shift+drop sets the
+  wrap. Slot images are embedded in saves and covered by undo/auto-save.
 
-### Images
-5. **Images on spine and back, and full-wrap art.** A separate image or
-   background per panel, plus one image across all three panels like retail
-   J-cards. Basic filters: brightness, contrast, saturation, greyscale,
-   "faded print".
+### 6. Fine adjustments for every text block (committed `216a234`)
+- Front titles, front contents, footer, spine titles, notes and back each get
+  Move →/↓ (pt), Letter spacing (pt) and Line height, with sliders.
+- Movement follows the text direction (CSS `translate`), so it works on the
+  rotated spine and back.
 
-### Fine control and usability
-6. **Precise nudging everywhere.** Sliders next to number boxes (the generic
-   `input[type=range][data-for]` sync already exists, so reuse it). Each text
-   block gets its own position offsets, letter spacing and line height.
-8. **Fonts and presets.** Drag in custom font files (.ttf/.otf/.woff) and pick
-   from a few Google Fonts. Layout presets ("Minimal", "Retro retail",
-   "Mixtape handwritten") plus saving your own.
+### 8. Fonts and style presets (committed `0ec35b6`)
+- **Title font** separate from the main font.
+- 18 Google Fonts in the font list, loaded on demand. Names are quoted, so
+  ones like "Press Start 2P" work.
+- **Add fonts** (or drop .ttf/.otf/.woff/.woff2): fonts join a browser library
+  and are embedded in saves of cards that use them.
+- **Style presets** change everything except the text and image placement: 7
+  built-ins (Default, Minimal, Retro retail, Mixtape handwritten,
+  Typewriter, Neon night, Bold block) plus Save as… / Delete for your own.
 
-### Output
-9. **Better export.** A high-res PNG/PDF export that doesn't depend on the
-   browser print dialog, and several different cards on one sheet (today,
-   one print repeats the same card).
+### 9. Export (committed `56b0abf`)
+- New **Export** page: PNG or PDF at 150/300/600 DPI, cropped to the card, the
+  bleed or the crop marks. PNGs record their DPI; PDFs are card size or
+  centred on Letter/A4.
+- **Sheet**: collect different cards and save them as one PDF, as many per page
+  as fit at true size. It lasts until the page is reloaded.
+- html-to-image and jsPDF load from CDNs on first use. The card's fonts
+  (app, Google, custom) are embedded.
 
-### Reference database
-10. **Album-art lookup.** Search artist + album, pick a cover result, drop it
-    on the card, and optionally auto-fill Side A/B track lists.
-    - **MusicBrainz + Cover Art Archive:** first choice. Free, no key, CORS
-      OK. It has track lists, often high-res scans, and real cassette
-      releases.
-    - **iTunes Search API:** fallback. Clean square art up to about 3000 px.
-    - **Discogs:** later. The biggest cassette catalogue and real J-card
-      scans, but it needs a free user token.
-    - Look art up live; never re-host it, because album art is copyrighted.
-      Printing it for your own tapes is fine.
-    - Add a personal library in the browser: recent covers and favourite
-      layouts.
+### 10. Album-art search (committed `a3cca01`)
+- **Search Album Art** in Cover: MusicBrainz (cassette releases first, Cover
+  Art Archive originals) or Apple Music (up to 3000 px). Empty boxes use the
+  card titles.
+- Use a result as the cover, back or wrap; **Fill titles**; **Fill track
+  list** (keeps a release's real sides: two media, or A/B track numbers;
+  otherwise splits in half).
+- **Recent Picks** keeps the last 12 choices in the browser.
+- Art is fetched live, never re-hosted. Deezer was tested and blocks browser
+  requests (no CORS).
+
+## Ideas for later
+- **Auto-fit text:** long albums (such as 26 tracks) overflow the front and
+  back. A "shrink to fit" option, or an overflow warning, would help.
+- **Discogs search:** the best cassette J-card scans, but it needs a free
+  user token entered by the user.
+- **Drag/zoom on the card for spine, back and wrap images**, like the cover
+  has. Today they use sliders only.
+- **DPI readout for the slot images.**
+- **Keep the export sheet in browser storage** so it survives reloads.
+- **Scroll-to-zoom on the cover:** consider requiring Ctrl.
 
 ## Housekeeping
-- Enable GitHub Pages: Settings → Pages → Deploy from a branch → `master`,
-  `/ (root)`. The site then lives at heisenberggtr.github.io/jcard-template.
+- GitHub Pages is on: https://heisenberggtr.github.io/jcard-template/
+  updates on every push to `master`.
 - Shared styles still load from `ed7n.github.io/res`. Consider vendoring them
   so the fork doesn't break if upstream changes.
 - Keep `LICENSE` (BSD 2-Clause) intact; add our own copyright line when we
