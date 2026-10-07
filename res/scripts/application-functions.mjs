@@ -6,6 +6,7 @@
  */
 
 import {
+  ART_SLOTS,
   COVER_IMAGE,
   DATA_VERSION,
   FILE_NAME,
@@ -13,7 +14,7 @@ import {
   MESSAGES,
   regexps,
 } from "./constants.mjs";
-import { application } from "./application-model.mjs";
+import { application, getArtKey } from "./application-model.mjs";
 import {
   NUL_OBJECT,
   NUL_STRING,
@@ -95,6 +96,7 @@ export function loadReader() {
   if (typeof data.cover === "string" && regexps.coverData.test(data.cover)) {
     setCover(data.cover);
   }
+  restoreArt(data.art);
   if (data.print2) {
     getPrintEntry("count").value = 2;
   }
@@ -121,6 +123,15 @@ export function preserveDataSaves() {
   if (application.instance.cover) {
     out.cover = application.instance.cover;
   }
+  const art = {};
+  ART_SLOTS.forEach((slot) => {
+    if (application.instance.art[slot]) {
+      art[slot] = application.instance.art[slot];
+    }
+  });
+  if (Object.keys(art).length) {
+    out.art = art;
+  }
   return out;
 }
 
@@ -137,7 +148,33 @@ export function restoreDataSaves(data) {
     application.instance.cover = null;
     getOutput("cover").element.src = COVER_IMAGE;
   }
+  restoreArt(data.art);
   updateData();
+}
+
+/** Sets every panel image slot from the given map, clearing missing ones. */
+function restoreArt(art) {
+  ART_SLOTS.forEach((slot) => {
+    const src = art && art[slot];
+    setArt(
+      slot,
+      typeof src === "string" && regexps.coverData.test(src) ? src : null
+    );
+  });
+}
+
+/** Sets the given panel image slot to the given data URL, or clears it. */
+export function setArt(slot, src = null) {
+  const frame = getOutput(getArtKey(slot)).element;
+  const image = frame.querySelector("img");
+  application.instance.art[slot] = src;
+  if (src) {
+    image.src = src;
+  } else {
+    image.removeAttribute("src");
+    getDataEntry(getArtKey(slot) + "Image").value = NUL_STRING;
+  }
+  frame.classList.toggle("has-image", Boolean(src));
 }
 
 /** Saves data form entries that are to be saved as a file download. */

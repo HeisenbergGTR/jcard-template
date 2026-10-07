@@ -6,7 +6,12 @@
  * data URL string by reference, so large covers cost no extra memory.
  */
 
-import { HISTORY_DELAY, HISTORY_MAX, MESSAGES } from "./constants.mjs";
+import {
+  ART_SLOTS,
+  HISTORY_DELAY,
+  HISTORY_MAX,
+  MESSAGES,
+} from "./constants.mjs";
 import {
   preserveDataSaves,
   restoreDataSaves,
@@ -132,7 +137,12 @@ function isSame(a, b) {
   if (!a || !b || a.cover !== b.cover) {
     return false;
   }
-  const strip = (snapshot) => ({ ...snapshot, cover: null });
+  const artA = a.art || {};
+  const artB = b.art || {};
+  if (ART_SLOTS.some((slot) => artA[slot] !== artB[slot])) {
+    return false;
+  }
+  const strip = (snapshot) => ({ ...snapshot, art: null, cover: null });
   return JSON.stringify(strip(a)) === JSON.stringify(strip(b));
 }
 

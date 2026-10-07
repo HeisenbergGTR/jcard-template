@@ -4,7 +4,14 @@
  * A single call to `setupEvents` makes the magic happen.
  */
 
-import { FILE_NAME, MESSAGES, TEXT_BLOCKS } from "./constants.mjs";
+import {
+  ART_SLOTS,
+  FILE_NAME,
+  FILTERS,
+  MESSAGES,
+  TEXT_BLOCKS,
+} from "./constants.mjs";
+import { getArtKey } from "./application-model.mjs";
 import {
   isImageFile,
   loadFile,
@@ -12,6 +19,7 @@ import {
   readCover,
   resetCover,
   saveCover,
+  setArt,
   setCover,
   saveDataSaves,
   testAndPrint,
@@ -78,6 +86,7 @@ const OPTIONS_COALESCE_PT = Object.freeze({ coalesce: true, suffix: "pt" });
 /** Adds event listeners and their handlers to elements. */
 export function setupEvents() {
   setupApplicationEvents();
+  setupArtEvents();
   setupButtonEvents();
   setupCoverEvents();
   setupEntryEvents();
@@ -299,7 +308,8 @@ function setupFileEvents() {
     if (data) {
       loadFile([data]);
     } else if (image) {
-      applyCoverFile(image);
+      const slot = getDropSlot(event);
+      slot ? applyArtFile(slot, image) : applyCoverFile(image);
     } else {
       const url = transfer.getData("text/uri-list").split(/\r?\n/)[0];
       if (url) {
@@ -332,6 +342,71 @@ function hasDropPayload(transfer) {
   return (
     transfer.types.includes("Files") || transfer.types.includes("text/uri-list")
   );
+}
+
+/** Adds listeners for the panel image slots. */
+function setupArtEvents() {
+  const i = getDataEntries();
+  ART_SLOTS.forEach((slot) => {
+    const key = getArtKey(slot);
+    const frame = getOutputs()[key].element;
+    i[key + "Image"].element.addEventListener("change", (event) => {
+      const files = event.target.files;
+      if (files && files.length) {
+        applyArtFile(slot, files[0]);
+      }
+    });
+    addActionListener(getButtons()[key + "Remove"], () => {
+      setArt(slot, null);
+      doAfterModify({ save: true });
+    });
+    i[key + "Turn"].element.addEventListener("input", (event) => {
+      const turn = Number(getInputSafeValue(event.target));
+      frame.classList.toggle("turned", turn === 90 || turn === 270);
+    });
+    ["Fit", "Turn", "Zoom", "OffsetX", "OffsetY", "Opacity", ...FILTERS].forEach(
+      (setting) =>
+        addStyleVariableListener(i, key + setting, OPTIONS_COALESCE)
+    );
+  });
+  FILTERS.forEach((filter) =>
+    addStyleVariableListener(i, "cover" + filter, OPTIONS_COALESCE)
+  );
+}
+
+/** Sets the given panel image slot to the given image file. */
+function applyArtFile(slot, file) {
+  return readCover(file).then(
+    (src) => {
+      setArt(slot, src);
+      doAfterModify({ save: true });
+    },
+    () => {}
+  );
+}
+
+/**
+ * Returns the panel image slot a dropped image should go to: the wrap when
+ * Shift is held, the spine or back when dropped on them, or null for the cover.
+ */
+function getDropSlot(event) {
+  if (event.shiftKey) {
+    return "wrap";
+  }
+  const outputs = getOutputs();
+  const isOver = (element) => {
+    const rect = element.getBoundingClientRect();
+    return (
+      rect.width > 0 &&
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    );
+  };
+  return ["spine", "back"].find((slot) =>
+    isOver(outputs[getArtKey(slot)].element)
+  ) || null;
 }
 
 /** Sets the cover image to the given image file and marks the card modified. */

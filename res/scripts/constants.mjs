@@ -35,6 +35,11 @@ export const HISTORY_DELAY = 500;
 /** Maximum undo steps. */
 export const HISTORY_MAX = 100;
 
+/** Panel image slots besides the front cover. */
+export const ART_SLOTS = Object.freeze(["wrap", "back", "spine"]);
+/** Image filter keys, applied to the cover and each slot. */
+export const FILTERS = Object.freeze(["Brightness", "Contrast", "Saturate"]);
+
 /** Text blocks with fine adjustments, by key, with their default line height. */
 export const TEXT_BLOCKS = Object.freeze({
   back: 1.1,

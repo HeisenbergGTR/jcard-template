@@ -7,7 +7,6 @@
 import {
   populateDataSaves,
   getApplicationEntry,
-  getDataEntry,
   getDataEntries,
   getViewEntry,
 } from "./application-functions.mjs";
@@ -47,9 +46,13 @@ const PARAMS = Object.freeze({
 
 const argumentss = new URLSearchParams(location.search);
 
-// The cover image is saved separately from its form entry, so it is unmarked.
+// Images are saved separately from their file inputs, so they are unmarked.
 Object.values(getDataEntries())
-  .filter((entry) => !entry.save && entry !== getDataEntry("coverImage"))
+  .filter(
+    (entry) =>
+      !entry.save &&
+      !(entry.element.type === "file" && entry.element.accept === "image/*")
+  )
   .forEach((entry) => {
     entry.element.labels.forEach((label) => {
       const index = label.innerHTML.lastIndexOf(SUFFIX_LABEL);

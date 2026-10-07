@@ -1,0 +1,38 @@
+{%-comment-%}
+Fields for one panel image slot. Parameters: `id` (kebab-case slot id such as
+"art-spine", matching application-model.mjs), `title` and `note`.
+{%-endcomment-%}
+<details class="art-slot" id="slot-{{include.id}}">
+<summary><h4>{{include.title}}</h4></summary>
+<p>{{include.note}}</p>
+<div class="field row" id="field-{{include.id}}-image">
+  <label for="input-{{include.id}}-image">Image:</label>
+  <div class="input fluid">
+    <input id="input-{{include.id}}-image" type="file" accept="image/*" />
+    <button id="button-{{include.id}}-remove" type="button">Remove</button>
+  </div>
+</div>
+<div class="group">
+  <div class="field row small" id="field-{{include.id}}-fit">
+    <label for="input-{{include.id}}-fit">Fit:</label>
+    <div class="input shorter">
+      <select id="input-{{include.id}}-fit">
+        <option value="cover">Fill</option>
+        <option value="contain">Whole image</option>
+      </select>
+    </div>
+  </div>
+  <div class="field row small" id="field-{{include.id}}-turn">
+    <label for="input-{{include.id}}-turn">Turn:</label>
+    <div class="input shorter">
+      <select id="input-{{include.id}}-turn">
+        <option value="0">0°</option>
+        <option value="90">90°</option>
+        <option value="180">180°</option>
+        <option value="270">270°</option>
+      </select>
+    </div>
+  </div>
+</div>
+{%-include art-sliders.html id=include.id zoom=true opacity=true-%}
+</details>

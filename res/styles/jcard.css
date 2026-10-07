@@ -226,6 +226,8 @@
   display: block;
   height: 100%;
   object-fit: cover;
+  filter: brightness(var(--jCardCoverBrightness, 1))
+    contrast(var(--jCardCoverContrast, 1)) saturate(var(--jCardCoverSaturate, 1));
   transform: translate(
       calc(var(--jCardCoverOffsetX, 0) * 1%),
       calc(var(--jCardCoverOffsetY, 0) * 1%)
@@ -549,4 +551,106 @@ form label > sup {
   --blockLineHeight: var(--jCardSpineTitleLineHeight, 1.1);
   --blockOffsetX: var(--jCardSpineTitleOffsetX);
   --blockOffsetY: var(--jCardSpineTitleOffsetY);
+}
+
+/* Panel image slots. Each frame covers its panel; the image is centred in it,
+   swapped to the frame's other dimension when turned 90° or 270°. */
+#jcard .template-art {
+  height: var(--artH);
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: var(--artW);
+}
+
+#jcard .template-art:not(.has-image) {
+  visibility: hidden;
+}
+
+#jcard .template-art-back {
+  --artH: var(--lengthJCardHeight);
+  --artW: var(--lengthJCardBack);
+  left: calc(var(--lengthJCardBackDelta) + var(--lengthJCardSpineDelta));
+}
+
+#jcard .template-art-spine {
+  --artH: var(--lengthJCardHeight);
+  --artW: var(--lengthJCardSpine);
+  left: calc(var(--lengthJCardBackTemplate) + var(--lengthJCardSpineDelta));
+}
+
+#jcard .template-art-wrap {
+  --artH: calc(var(--lengthJCardHeight) + 2 * var(--lengthJCardBleed));
+  --artW: calc(
+    var(--lengthJCardBack) + var(--lengthJCardSpine) + var(--lengthJCardFront) +
+      2 * var(--lengthJCardBleed)
+  );
+  left: calc(
+    var(--lengthJCardBackDelta) + var(--lengthJCardSpineDelta) -
+      var(--lengthJCardBleed)
+  );
+  top: var(--lengthJCardBleedMirror);
+}
+
+#jcard .template-art-image {
+  --artImageH: var(--artH);
+  --artImageW: var(--artW);
+  filter: brightness(var(--artBrightness, 1)) contrast(var(--artContrast, 1))
+    saturate(var(--artSaturate, 1));
+  height: var(--artImageH);
+  left: 50%;
+  max-width: none;
+  object-fit: var(--artFit, cover);
+  opacity: var(--artOpacity, 1);
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%)
+    translate(
+      calc(var(--artOffsetX, 0) * var(--artW) / 100),
+      calc(var(--artOffsetY, 0) * var(--artH) / 100)
+    )
+    rotate(calc(var(--artTurn, 0) * 1deg)) scale(var(--artZoom, 1));
+  width: var(--artImageW);
+}
+
+#jcard .template-art.turned .template-art-image {
+  --artImageH: var(--artW);
+  --artImageW: var(--artH);
+}
+
+#jcard .template-art-wrap {
+  --artBrightness: var(--jCardArtWrapBrightness);
+  --artContrast: var(--jCardArtWrapContrast);
+  --artFit: var(--jCardArtWrapFit);
+  --artOffsetX: var(--jCardArtWrapOffsetX);
+  --artOffsetY: var(--jCardArtWrapOffsetY);
+  --artOpacity: var(--jCardArtWrapOpacity);
+  --artSaturate: var(--jCardArtWrapSaturate);
+  --artTurn: var(--jCardArtWrapTurn);
+  --artZoom: var(--jCardArtWrapZoom);
+}
+
+#jcard .template-art-back {
+  --artBrightness: var(--jCardArtBackBrightness);
+  --artContrast: var(--jCardArtBackContrast);
+  --artFit: var(--jCardArtBackFit);
+  --artOffsetX: var(--jCardArtBackOffsetX);
+  --artOffsetY: var(--jCardArtBackOffsetY);
+  --artOpacity: var(--jCardArtBackOpacity);
+  --artSaturate: var(--jCardArtBackSaturate);
+  --artTurn: var(--jCardArtBackTurn);
+  --artZoom: var(--jCardArtBackZoom);
+}
+
+#jcard .template-art-spine {
+  --artBrightness: var(--jCardArtSpineBrightness);
+  --artContrast: var(--jCardArtSpineContrast);
+  --artFit: var(--jCardArtSpineFit);
+  --artOffsetX: var(--jCardArtSpineOffsetX);
+  --artOffsetY: var(--jCardArtSpineOffsetY);
+  --artOpacity: var(--jCardArtSpineOpacity);
+  --artSaturate: var(--jCardArtSpineSaturate);
+  --artTurn: var(--jCardArtSpineTurn);
+  --artZoom: var(--jCardArtSpineZoom);
 }

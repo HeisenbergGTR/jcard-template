@@ -95,6 +95,16 @@
 {% include_relative _sections/sections/titles.html-%}
 </details>
 <details>
+<summary><h3>Spine, Back &amp; Wrap Art</h3></summary>
+<section>
+<p>Drop an image onto the spine or back of the card to put it there, or hold
+Shift while dropping to wrap it across the whole card. Text stays on top.</p>
+{%include art-slot.html id="art-spine" title="Spine" note="Runs along the spine. Turn it 90° for a landscape image."-%}
+{%include art-slot.html id="art-back" title="Back" note="Fills the back flap behind the track list."-%}
+{%include art-slot.html id="art-wrap" title="Wrap (whole card)" note="One image across the back, spine and front, extending into the bleed. The front cover still sits on top unless you remove it."-%}
+</section>
+</details>
+<details>
 <summary><h3>Footer</h3></summary>
 {% include_relative _sections/sections/footer.html-%}
 </details>

@@ -4,7 +4,12 @@
  * Whenever available, use `application-functions` to operate on the model.
  */
 
-import { FILE_NAME, TEXT_BLOCKS } from "./constants.mjs";
+import {
+  ART_SLOTS,
+  FILE_NAME,
+  FILTERS,
+  TEXT_BLOCKS,
+} from "./constants.mjs";
 import { application as root } from "./roots.mjs";
 import { JCardOutput } from "./models.mjs";
 import { NUL_STRING } from "./common/constants.mjs";
@@ -44,6 +49,43 @@ function makeTextAdjustEntries() {
   return out;
 }
 
+/** Returns the model key prefix of the given panel image slot. */
+export function getArtKey(slot) {
+  return "art" + slot.charAt(0).toUpperCase() + slot.substring(1);
+}
+
+/**
+ * Returns data entries for each panel image slot, and the cover filters. Slot
+ * images are saved with the card separately from their file inputs.
+ */
+function makeArtEntries() {
+  const out = {};
+  const add = (key, id, preset, options = {}) => {
+    out[key] = new DataFormEntry({ id: id, preset: preset, ...options });
+  };
+  ART_SLOTS.forEach((slot) => {
+    const key = getArtKey(slot);
+    const id = "art-" + slot;
+    add(key + "Image", id + "-image", NUL_STRING, {
+      persistent: true,
+      save: false,
+    });
+    add(key + "Fit", id + "-fit", "cover");
+    add(key + "Turn", id + "-turn", "0");
+    add(key + "Zoom", id + "-zoom", 1);
+    add(key + "OffsetX", id + "-offset-x", 0);
+    add(key + "OffsetY", id + "-offset-y", 0);
+    add(key + "Opacity", id + "-opacity", 1);
+    FILTERS.forEach((filter) =>
+      add(key + filter, id + "-" + filter.toLowerCase(), 1)
+    );
+  });
+  FILTERS.forEach((filter) =>
+    add("cover" + filter, "cover-" + filter.toLowerCase(), 1)
+  );
+  return out;
+}
+
 /** Application model. */
 export const application = Object.freeze({
   /** Root element. */
@@ -60,6 +102,9 @@ export const application = Object.freeze({
   ),
   /** Form buttons. */
   buttons: Object.freeze({
+    artBackRemove: new FormButton({ id: "art-back-remove" }),
+    artSpineRemove: new FormButton({ id: "art-spine-remove" }),
+    artWrapRemove: new FormButton({ id: "art-wrap-remove" }),
     coverAdjustReset: new FormButton({ id: "cover-adjust-reset" }),
     coverReset: new FormButton({ id: "cover-reset" }),
     coverRotateLeft: new FormButton({ id: "cover-rotate-left" }),
@@ -95,6 +140,7 @@ export const application = Object.freeze({
     }),
     /** Data. */
     data: Object.freeze({
+      ...makeArtEntries(),
       ...makeTextAdjustEntries(),
       backContentsAlignment: new DataFormEntry({
         id: "back-contents-alignment",
@@ -330,6 +376,9 @@ export const application = Object.freeze({
   }),
   /** J-card outputs. */
   outputs: Object.freeze({
+    artBack: new JCardOutput({ class: "art-back" }),
+    artSpine: new JCardOutput({ class: "art-spine" }),
+    artWrap: new JCardOutput({ class: "art-wrap" }),
     back: new JCardOutput({ class: "back" }),
     boundaries: new JCardOutput({ class: "boundaries" }),
     contents: new JCardOutput({ class: "contents" }),
@@ -364,6 +413,8 @@ export const application = Object.freeze({
   }),
   /** Current instance. */
   instance: Object.seal({
+    /** Panel images as data URLs by slot, or null for none. */
+    art: { wrap: null, back: null, spine: null },
     /** Cover image as a data URL, or null for the default cover. */
     cover: null,
     file: null,
